@@ -109,6 +109,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             temp = IntentUtil.parserTakedVideo(this, true);
             Log.e(TAG, temp.exists() ? "Video record success,file path is:" + temp.getAbsolutePath() : "Video file not exist!");
         } else if (requestCode == ERecordBuilder.getRequestCode()) {
+
+
             temp = IntentUtil.parserCustomTakedVideo(this, data, true);
             Log.e(TAG, temp.exists() ? "Custom video record success,file path is:" + temp.getAbsolutePath() : "Custom video file not exist!");
         } else if (requestCode == IntentUtil.getTakeFileRequestCode()) {
