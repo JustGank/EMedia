@@ -120,7 +120,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 Toast.makeText(this, "无效文件", Toast.LENGTH_SHORT).show();
             }else
             {
-                Log.e(TAG, "  Authority=" + data.getData().getAuthority());
+                Log.e(TAG, "  Authority = " + data.getData().getAuthority());
                 String filePath = FileChooseUtil.getPathFromUri(this, data.getData());
                 Log.e(TAG, filePath + "  Authority=" + data.getData().getAuthority());
             }

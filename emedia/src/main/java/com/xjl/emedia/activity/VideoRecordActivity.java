@@ -465,7 +465,8 @@ public class VideoRecordActivity extends Activity {
         public void onClick(View v) {
             if (recording) {
                 if (countUp < recordMinTime) {
-                    Toast.makeText(VideoRecordActivity.this, "视频时间过短", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(VideoRecordActivity.this,
+                            getResources().getString(R.string.video_too_short), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 //如果正在录制点击这个按钮表示录制完成
