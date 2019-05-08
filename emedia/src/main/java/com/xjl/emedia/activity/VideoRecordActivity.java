@@ -113,9 +113,9 @@ public class VideoRecordActivity extends Activity {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    focusOnTouch(dm.widthPixels / 2 , dm.heightPixels / 2);
+                    focusOnTouch(dm.widthPixels / 2, dm.heightPixels / 2);
                 }
-            },1000);
+            }, 1000);
 
 
         }
@@ -538,6 +538,9 @@ public class VideoRecordActivity extends Activity {
 
     private boolean prepareMediaRecorder() {
         mediaRecorder = new MediaRecorder();
+        if (mCamera == null) {
+            return false;
+        }
         mCamera.unlock();
         mediaRecorder.setCamera(mCamera);
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
