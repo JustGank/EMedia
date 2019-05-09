@@ -33,10 +33,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private final String cacheDirPathVideos = cacheDirPath + File.separator + "Videos";
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_main);
+
+        String[] permissions = {
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(permissions, 1001);
+        }
+
         initView();
     }
 
@@ -75,6 +86,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         .setRecordMinTime(3)
                         .setLimitTime(0)
                         .setQuality(ERecordBuilder.RecordQuality.ALL)
+                        .setShowLight(false)
+                        .setShowRatio(false)
                         .startRecord(cacheDirPathVideos);
                 break;
             case R.id.take_file:
@@ -104,28 +117,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         } else if (requestCode == IntentUtil.TAKE_PHOTO_REQUEST_CODE) {
             temp = IntentUtil.parserTakedPhoto(this, true);
-            Log.e(TAG, temp.exists() ? "Image take success,file path:" + temp.getAbsolutePath() : "Image file not exist!");
+            if (temp != null)
+                Log.e(TAG, temp.exists() ? "Image take success,file path:" + temp.getAbsolutePath() : "Image file not exist!");
         } else if (requestCode == IntentUtil.TAKE_VIDEO_REQUEST_CODE) {
             temp = IntentUtil.parserTakedVideo(this, true);
-            Log.e(TAG, temp.exists() ? "Video record success,file path is:" + temp.getAbsolutePath() : "Video file not exist!");
+            if (temp != null)
+                Log.e(TAG, temp.exists() ? "Video record success,file path is:" + temp.getAbsolutePath() : "Video file not exist!");
         } else if (requestCode == ERecordBuilder.getRequestCode()) {
-
-
             temp = IntentUtil.parserCustomTakedVideo(this, data, true);
-            Log.e(TAG, temp.exists() ? "Custom video record success,file path is:" + temp.getAbsolutePath() : "Custom video file not exist!");
+            if (temp != null)
+                Log.e(TAG, temp.exists() ? "Custom video record success,file path is:" + temp.getAbsolutePath() : "Custom video file not exist!");
         } else if (requestCode == IntentUtil.getTakeFileRequestCode()) {
-
-
             if (FileChooseUtil.isDownloadsDocument(data.getData())) {
                 Toast.makeText(this, "无效文件", Toast.LENGTH_SHORT).show();
-            }else
-            {
+            } else {
                 Log.e(TAG, "  Authority = " + data.getData().getAuthority());
                 String filePath = FileChooseUtil.getPathFromUri(this, data.getData());
                 Log.e(TAG, filePath + "  Authority=" + data.getData().getAuthority());
             }
-
-
         }
     }
 }
