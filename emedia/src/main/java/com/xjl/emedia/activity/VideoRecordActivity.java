@@ -63,6 +63,8 @@ public class VideoRecordActivity extends Activity {
     private MediaRecorder mediaRecorder;
     private static boolean cameraFront = false;
     private static boolean flash = false;
+    private boolean isShowLight = true;
+    private boolean isShowRatio = true;
     private long countUp;
     boolean recording = false;
 
@@ -94,6 +96,8 @@ public class VideoRecordActivity extends Activity {
         limitTime = getIntent().getIntExtra("limitTime", 0);
         recordQuality = (ERecordBuilder.RecordQuality) getIntent().getSerializableExtra("recordQuality");
         savePath = getIntent().getStringExtra("savePath");
+        isShowLight = getIntent().getBooleanExtra("isShowLight",true);
+        isShowRatio=getIntent().getBooleanExtra("isShowRatio",true);
 
         if (TextUtils.isEmpty(savePath)) {
             Toast.makeText(VideoRecordActivity.this, getResources().getString(R.string.save_path_null), Toast.LENGTH_SHORT).show();
@@ -117,8 +121,10 @@ public class VideoRecordActivity extends Activity {
                 }
             }, 1000);
 
-
         }
+
+        buttonFlash.setVisibility(isShowLight?View.VISIBLE:View.GONE);
+        buttonQuality.setVisibility(isShowRatio?View.VISIBLE:View.GONE);
 
     }
 
@@ -558,7 +564,7 @@ public class VideoRecordActivity extends Activity {
         filePath = savePath + File.separator + System.currentTimeMillis() + ".mp4";
         File file = new File(filePath);
         if (!file.getParentFile().exists()) {
-            file.mkdirs();
+            file.getParentFile().mkdirs();
         }
         mediaRecorder.setOutputFile(filePath);
 

@@ -86,6 +86,28 @@ public class ERecordBuilder implements Serializable {
         startRecord(savePath);
     }
 
+    private boolean isShowLight = true;
+
+    public ERecordBuilder setShowLight(boolean showLight) {
+        this.isShowLight = showLight;
+        return this;
+    }
+
+    public boolean getShowLight() {
+        return isShowLight;
+    }
+
+    private boolean isShowRatio = true;
+
+    public ERecordBuilder setShowRatio(boolean showRatio) {
+        this.isShowRatio = showRatio;
+        return this;
+    }
+
+    public boolean getShowRatio() {
+        return isShowRatio;
+    }
+
     public void startRecord(String savePath) {
         /**
          * 保证录制时间不小于最小时间
@@ -95,10 +117,12 @@ public class ERecordBuilder implements Serializable {
         }
         this.savePath = savePath;
         Intent intent = new Intent(activity, VideoRecordActivity.class);
-        intent.putExtra("recordMinTime", recordMinTime);
-        intent.putExtra("limitTime", limitTime);
-        intent.putExtra("recordQuality", recordQuality);
+        intent.putExtra("recordMinTime", this.recordMinTime);
+        intent.putExtra("limitTime", this.limitTime);
+        intent.putExtra("recordQuality", this.recordQuality);
         intent.putExtra("savePath", this.savePath);
+        intent.putExtra("isShowLight", this.isShowLight);
+        intent.putExtra("isShowRatio", this.isShowRatio);
         activity.startActivityForResult(intent, RequestCode);
     }
 
