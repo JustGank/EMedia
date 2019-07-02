@@ -57,8 +57,8 @@ public class VideoRecordFragment extends Fragment {
     private Camera mCamera;
     private CameraPreview mPreview;
     private MediaRecorder mediaRecorder;
-    private static boolean cameraFront = false;
-    private static boolean flash = false;
+    private boolean cameraFront = false;
+    private  boolean flash = false;
     private boolean isShowLight = true;
     private boolean isShowRatio = true;
     private long countUp;
@@ -204,8 +204,9 @@ public class VideoRecordFragment extends Fragment {
         if (mCamera == null) {
             releaseCamera();
             final boolean frontal = cameraFront;
-
+            Log.e(TAG,"frontal="+frontal);
             int cameraId = findFrontFacingCamera();
+            Log.e(TAG,"cameraId="+cameraId);
             if (cameraId < 0) {
                 //前置摄像头不存在
                 switchCameraListener = new View.OnClickListener() {
@@ -258,6 +259,7 @@ public class VideoRecordFragment extends Fragment {
         for (int i = 0; i < numberOfCameras; i++) {
             Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(i, info);
+            Log.e(TAG,"findFrontFacingCamera i="+i+"  CAMERA_FACING_FRONT="+ Camera.CameraInfo.CAMERA_FACING_FRONT);
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                 cameraId = i;
                 cameraFront = true;
@@ -699,10 +701,7 @@ public class VideoRecordFragment extends Fragment {
         textChrono.setVisibility(View.INVISIBLE);
     }
 
-    public static void reset() {
-        flash = false;
-        cameraFront = false;
-    }
+
 
     public void onKeyDown() {
         if (recording) {
