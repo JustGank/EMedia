@@ -72,9 +72,15 @@ public class VideoRecordActivity extends FragmentActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (videoRecordFragment != null) {
-            videoRecordFragment.onKeyDown();
+        if(previewFragment==null){
+            if (videoRecordFragment != null) {
+                videoRecordFragment.onKeyDown();
+            }
+        }else{
+            previewFragment.onKeyDown();
         }
+
+
         return super.onKeyDown(keyCode, event);
     }
 

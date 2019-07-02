@@ -92,4 +92,11 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    public void onKeyDown(){
+        File file = new File(filePath);
+        file.delete();
+        getActivity().setResult(VideoRecordActivity.RESULT_CODE_FOR_RECORD_VIDEO_CANCEL);
+        getActivity().finish();
+    }
+
 }

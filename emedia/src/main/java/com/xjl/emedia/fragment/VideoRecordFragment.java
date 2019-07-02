@@ -605,6 +605,7 @@ public class VideoRecordFragment extends Fragment {
 
     public void releaseCamera() {
         if (mCamera != null) {
+            mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
         }
