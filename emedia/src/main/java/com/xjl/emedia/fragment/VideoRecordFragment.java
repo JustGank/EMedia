@@ -550,6 +550,10 @@ public class VideoRecordFragment extends Fragment {
             mediaRecorder.reset();
             mediaRecorder.release();
             mediaRecorder = null;
+
+        }
+
+        if(mCamera!=null){
             mCamera.lock();
         }
     }
