@@ -235,7 +235,7 @@ public class VideoRecordFragment extends Fragment {
                 reloadQualities(cameraId);
             }catch (Exception e){
                 mCamera=null;
-                Toast.makeText(getActivity(),"",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(),R.string.camera_occupancy,Toast.LENGTH_SHORT).show();
                 getActivity().finish();
                 e.printStackTrace();
             }
