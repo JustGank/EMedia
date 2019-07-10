@@ -16,4 +16,5 @@
     <string name="changing_flashLight_mode">闪光灯模式</string>
     <string name="save_path_null">存储路径为空</string>
     <string name="please_gave_permission">请给与相应权限后重新打开</string>
+    <string name="camera_occupancy">摄像头占用中</string>
 </resources>

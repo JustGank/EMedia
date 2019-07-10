@@ -229,10 +229,16 @@ public class VideoRecordFragment extends Fragment {
                     buttonFlash.setImageResource(R.mipmap.ic_flash_on_white);
                 }
             }
-
-            mCamera = Camera.open(cameraId);
-            mPreview.refreshCamera(mCamera);
-            reloadQualities(cameraId);
+            try{
+                mCamera = Camera.open(cameraId);
+                mPreview.refreshCamera(mCamera);
+                reloadQualities(cameraId);
+            }catch (Exception e){
+                mCamera=null;
+                Toast.makeText(getActivity(),"",Toast.LENGTH_SHORT).show();
+                getActivity().finish();
+                e.printStackTrace();
+            }
 
         }
 
