@@ -58,7 +58,7 @@ public class VideoRecordFragment extends Fragment {
     private CameraPreview mPreview;
     private MediaRecorder mediaRecorder;
     private boolean cameraFront = false;
-    private  boolean flash = false;
+    private boolean flash = false;
     private boolean isShowLight = true;
     private boolean isShowRatio = true;
     private long countUp;
@@ -84,6 +84,11 @@ public class VideoRecordFragment extends Fragment {
 
 
     public VideoRecordFragment() {
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Nullable
@@ -174,18 +179,25 @@ public class VideoRecordFragment extends Fragment {
 
     private void focusOnTouch(float x, float y) {
         if (mCamera != null) {
-            Camera.Parameters parameters = mCamera.getParameters();
-            if (parameters.getMaxNumMeteringAreas() > 0) {
-                Rect rect = calculateFocusArea(x, y);
-                parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
-                meteringAreas.add(new Camera.Area(rect, 800));
-                parameters.setFocusAreas(meteringAreas);
-                mCamera.setParameters(parameters);
-                mCamera.autoFocus(mAutoFocusTakePictureCallback);
-            } else {
-                mCamera.autoFocus(mAutoFocusTakePictureCallback);
+
+            try {
+                Camera.Parameters parameters = mCamera.getParameters();
+                if (parameters.getMaxNumMeteringAreas() > 0) {
+                    Rect rect = calculateFocusArea(x, y);
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                    List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
+                    meteringAreas.add(new Camera.Area(rect, 800));
+                    parameters.setFocusAreas(meteringAreas);
+                    mCamera.setParameters(parameters);
+                    mCamera.autoFocus(mAutoFocusTakePictureCallback);
+                } else {
+                    mCamera.autoFocus(mAutoFocusTakePictureCallback);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
+
         }
     }
 
@@ -204,9 +216,9 @@ public class VideoRecordFragment extends Fragment {
         if (mCamera == null) {
             releaseCamera();
             final boolean frontal = cameraFront;
-            Log.e(TAG,"frontal="+frontal);
+            Log.e(TAG, "frontal=" + frontal);
             int cameraId = findFrontFacingCamera();
-            Log.e(TAG,"cameraId="+cameraId);
+            Log.e(TAG, "cameraId=" + cameraId);
             if (cameraId < 0) {
                 //前置摄像头不存在
                 switchCameraListener = new View.OnClickListener() {
@@ -229,13 +241,13 @@ public class VideoRecordFragment extends Fragment {
                     buttonFlash.setImageResource(R.mipmap.ic_flash_on_white);
                 }
             }
-            try{
+            try {
                 mCamera = Camera.open(cameraId);
                 mPreview.refreshCamera(mCamera);
                 reloadQualities(cameraId);
-            }catch (Exception e){
-                mCamera=null;
-                Toast.makeText(getActivity(),R.string.camera_occupancy,Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                mCamera = null;
+                Toast.makeText(getActivity(), R.string.camera_occupancy, Toast.LENGTH_SHORT).show();
                 getActivity().finish();
                 e.printStackTrace();
             }
@@ -265,7 +277,7 @@ public class VideoRecordFragment extends Fragment {
         for (int i = 0; i < numberOfCameras; i++) {
             Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(i, info);
-            Log.e(TAG,"findFrontFacingCamera i="+i+"  CAMERA_FACING_FRONT="+ Camera.CameraInfo.CAMERA_FACING_FRONT);
+            Log.e(TAG, "findFrontFacingCamera i=" + i + "  CAMERA_FACING_FRONT=" + Camera.CameraInfo.CAMERA_FACING_FRONT);
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                 cameraId = i;
                 cameraFront = true;
@@ -532,7 +544,7 @@ public class VideoRecordFragment extends Fragment {
         recording = false;
         releaseCamera();
         releaseMediaRecorder();
-        if(onFinishRecordValueable!=null){
+        if (onFinishRecordValueable != null) {
             onFinishRecordValueable.onFinish(filePath);
         }
     }
@@ -559,7 +571,7 @@ public class VideoRecordFragment extends Fragment {
 
         }
 
-        if(mCamera!=null){
+        if (mCamera != null) {
             mCamera.lock();
         }
     }
@@ -710,7 +722,6 @@ public class VideoRecordFragment extends Fragment {
         chronoRecordingImage.setVisibility(View.INVISIBLE);
         textChrono.setVisibility(View.INVISIBLE);
     }
-
 
 
     public void onKeyDown() {

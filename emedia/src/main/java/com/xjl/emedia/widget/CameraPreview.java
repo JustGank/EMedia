@@ -20,6 +20,8 @@ import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 
+    private static final String TAG = "CameraPreview";
+
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private Context mContext;
@@ -66,6 +68,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
         // set preview size and make any resize, rotate or
         // reformatting changes here
+        Log.e(TAG, "orientation=" + getResources().getConfiguration().orientation);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             if (camera != null) {
                 camera.setDisplayOrientation(90);
@@ -102,9 +105,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         Point point = new Point();
         wm.getDefaultDisplay().getSize(point);
-        final int width =point.x ;
-        final int height =point.y ;
-        Logger.e("current screen width &  width = "+width+"   height = "+height);
+        final int width = point.x;
+        final int height = point.y;
+        Logger.e("current screen width &  width = " + width + "   height = " + height);
 
         final List<Camera.Size> mSupportedPreviewSizes = mCamera.getParameters().getSupportedPreviewSizes();
 

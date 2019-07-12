@@ -17,6 +17,7 @@ import com.xjl.emedia.builder.EPickerBuilder;
 import com.xjl.emedia.builder.ERecordBuilder;
 import com.xjl.emedia.utils.FileChooseUtil;
 import com.xjl.emedia.utils.IntentUtil;
+import com.xjl.emedia.utils.PicUtils;
 
 import java.io.File;
 import java.util.List;
@@ -58,7 +59,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.start_album:
                 new EPickerBuilder(this)
                         .setPickerType(EPickerBuilder.PickerType.PHOTO_VIDEO)
-                        .setMaxChoseNum(2)
+                        .setMaxChoseNum(1)
                         .setFilterPhotoMaxSize(10)
                         .setProgressDialogClass(ProgressDialog.class)
                         .openCompress(true, cacheDirPathCompress)
@@ -109,6 +110,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onActivityResult(requestCode, resultCode, data);
         Log.e(TAG, "  requestCode=" + requestCode + "    resultCode=" + resultCode + " data is null=" + (data == null));
 
+
+        if (resultCode == RESULT_CANCELED) {
+            return;
+        }
+
+
         File temp;
         if (requestCode == EPickerBuilder.getRequestCode()) {
             List<MediaPickerBean> mediaList = IntentUtil.parserMediaResultData(requestCode, data);
@@ -118,7 +125,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
         } else if (requestCode == IntentUtil.TAKE_PHOTO_REQUEST_CODE) {
             temp = IntentUtil.parserTakedPhoto(this, true);
             if (temp != null)
+            {
                 Log.e(TAG, temp.exists() ? "Image take success,file path:" + temp.getAbsolutePath() : "Image file not exist!");
+
+                PicUtils.readPictureDegree(temp.getAbsolutePath());
+
+
+            }
+
+
+
+
+
+
+
         } else if (requestCode == IntentUtil.TAKE_VIDEO_REQUEST_CODE) {
             temp = IntentUtil.parserTakedVideo(this, true);
             if (temp != null)
