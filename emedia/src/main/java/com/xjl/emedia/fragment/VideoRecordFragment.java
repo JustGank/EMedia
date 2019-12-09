@@ -49,6 +49,7 @@ import java.util.List;
 
 public class VideoRecordFragment extends Fragment {
 
+
     private static final String TAG = VideoRecordFragment.class.getSimpleName();
 
     private static final int FOCUS_AREA_SIZE = 500;
@@ -122,16 +123,7 @@ public class VideoRecordFragment extends Fragment {
             } else {
                 initView();
                 initializemPreview();
-
-                final DisplayMetrics dm = getResources().getDisplayMetrics();
-
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        focusOnTouch(dm.widthPixels / 2, dm.heightPixels / 2);
-                    }
-                }, 1000);
-
+                autoFocus();
             }
         }
 
@@ -177,6 +169,20 @@ public class VideoRecordFragment extends Fragment {
         });
     }
 
+    private final int focus_delay_time=1000;
+
+    private void autoFocus(){
+        final DisplayMetrics dm = getResources().getDisplayMetrics();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                focusOnTouch(dm.widthPixels / 2, dm.heightPixels / 2);
+            }
+        }, focus_delay_time);
+
+    }
+
+
     private void focusOnTouch(float x, float y) {
         if (mCamera != null) {
 
@@ -184,14 +190,16 @@ public class VideoRecordFragment extends Fragment {
                 Camera.Parameters parameters = mCamera.getParameters();
                 if (parameters.getMaxNumMeteringAreas() > 0) {
                     Rect rect = calculateFocusArea(x, y);
-                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
                     List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
                     meteringAreas.add(new Camera.Area(rect, 800));
                     parameters.setFocusAreas(meteringAreas);
+
                     mCamera.setParameters(parameters);
-                    mCamera.autoFocus(mAutoFocusTakePictureCallback);
+                    //修改自动对焦模式 录像自动对焦开启后 不能再使用 aotuFocus 会失败
+                   //mCamera.autoFocus(mAutoFocusTakePictureCallback);
                 } else {
-                    mCamera.autoFocus(mAutoFocusTakePictureCallback);
+                   //mCamera.autoFocus(mAutoFocusTakePictureCallback);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -484,6 +492,8 @@ public class VideoRecordFragment extends Fragment {
                 reloadQualities(cameraId);
             }
         }
+        //切换摄像头后自动关对焦
+        autoFocus();
     }
 
 
@@ -496,9 +506,13 @@ public class VideoRecordFragment extends Fragment {
                             getResources().getString(R.string.video_too_short), Toast.LENGTH_SHORT).show();
                     return;
                 }
+                //录制结束显示翻转摄像头
+                button_ChangeCamera.setVisibility(View.VISIBLE);
                 //如果正在录制点击这个按钮表示录制完成
                 finishRecord();
             } else {
+                //录制开启后隐藏 反转摄像头
+                button_ChangeCamera.setVisibility(View.GONE);
                 //准备开始录制视频
                 if (!prepareMediaRecorder()) {
                     Toast.makeText(getActivity(), getString(R.string.camera_init_fail), Toast.LENGTH_SHORT).show();
