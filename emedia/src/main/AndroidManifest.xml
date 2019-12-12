@@ -44,9 +44,6 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-
-
-
     </application>
 
 

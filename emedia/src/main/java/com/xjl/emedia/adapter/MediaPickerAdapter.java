@@ -26,22 +26,19 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
     private Activity activity;
     private LayoutInflater inflater;
     private List<MediaPickerBean> list;
-    private boolean singlePicker = false;
     private boolean openPreview = false;
     private boolean openSkipMemoryCache = false;
 
-    public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list, int maxPickerNum) {
+    public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list) {
         this.activity = activity;
         this.list = list;
         this.inflater = activity.getLayoutInflater();
-        this.singlePicker = maxPickerNum == 1;
     }
 
-    public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list, int maxPickerNum, boolean openPreview, boolean openSkipMemoryCache) {
+    public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list, boolean openPreview, boolean openSkipMemoryCache) {
         this.activity = activity;
         this.list = list;
         this.inflater = activity.getLayoutInflater();
-        this.singlePicker = maxPickerNum == 1;
         this.openPreview = openPreview;
         this.openSkipMemoryCache = openSkipMemoryCache;
     }
@@ -57,13 +54,16 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
 
         MediaPickerBean mediaPickerBean = list.get(position);
 
-        Glide.with(activity)
-                .load("file://" + mediaPickerBean.getMediaFilePath())
-                .skipMemoryCache(openSkipMemoryCache)
-                .centerCrop()
-                .into(holder.cover);
+        if(!holder.coverUrl.equals(mediaPickerBean.getMediaFilePath())){
+            Glide.with(activity)
+                    .load("file://" + mediaPickerBean.getMediaFilePath())
+                    .skipMemoryCache(openSkipMemoryCache)
+                    .centerCrop()
+                    .into(holder.cover);
 
-        holder.selected.setVisibility(singlePicker ? View.GONE : View.VISIBLE);
+            holder.coverUrl=mediaPickerBean.getMediaFilePath();
+        }
+
         holder.selected.setBackgroundResource(mediaPickerBean.isPicked
                 ? R.mipmap.image_choose : R.mipmap.image_not_chose);
 
@@ -106,20 +106,14 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
                 }
             } else if (v.getId() == R.id.cover) {
 
-                if(singlePicker)
-                {
-                    onItemClickListener.onClicked(position, list.get(position));
-                }else
-                {
-                    if (openPreview) {
-                        if (IntentUtil.isImage(list.get(position).getMediaFilePath())) {
-                            IntentUtil.openLocalImage(activity, list.get(position).getMediaFilePath());
-                        } else if (IntentUtil.isVideo(list.get(position).getMediaFilePath())) {
-                            IntentUtil.openLocalVideo(activity, list.get(position).getMediaFilePath());
-                        }
+
+                if (openPreview) {
+                    if (IntentUtil.isImage(list.get(position).getMediaFilePath())) {
+                        IntentUtil.openLocalImage(activity, list.get(position).getMediaFilePath());
+                    } else if (IntentUtil.isVideo(list.get(position).getMediaFilePath())) {
+                        IntentUtil.openLocalVideo(activity, list.get(position).getMediaFilePath());
                     }
                 }
-
 
 
             } else if (v.getId() == R.id.container) {
@@ -155,6 +149,8 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
         protected ImageView selected;
         protected TextView time;
         protected RelativeLayout container;
+        protected String coverUrl="";
+
 
         public ViewHolder(View itemView) {
             super(itemView);

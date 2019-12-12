@@ -127,6 +127,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
             decorView.setSystemUiVisibility(option);
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
+
         parserIntent();
         initView();
         getMedia();
@@ -170,18 +171,17 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         chosedNum.setOnClickListener(MediaPickerActivity.this);
         recyclerview = (RecyclerView) findViewById(R.id.recyclerview);
 
-        ((SimpleItemAnimator) recyclerview.getItemAnimator()).setSupportsChangeAnimations(false);
-
         recyclerview.setLayoutManager(new GridLayoutManager(MediaPickerActivity.this, 4));
         recyclerview.setAdapter(
                 adapter = new MediaPickerAdapter
                         (MediaPickerActivity
                                 .this, new ArrayList<MediaPickerBean>()
-                                , PICKED_MEDIA_MAX_SIZE
-                        ,openPreview,openSkipMemoryCache));
+                                , openPreview, openSkipMemoryCache));
 
 
         adapter.setOnItemClickListener(medidClickListener);
+
+        ((SimpleItemAnimator) recyclerview.getItemAnimator()).setSupportsChangeAnimations(false);
     }
 
     private void getMedia() {
@@ -264,29 +264,26 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
                 return;
             }
 
-            if (PICKED_MEDIA_MAX_SIZE == 1) {
-                pickedList.add(bean);
-                chosedNum.performClick();
+
+            if (pickedList.contains(bean)) {
+                pickedList.remove(bean);
+                adapter.notifyPickState(position);
             } else {
-                if (pickedList.contains(bean)) {
-                    pickedList.remove(bean);
+                if (pickedList.size() < PICKED_MEDIA_MAX_SIZE) {
+                    pickedList.add(bean);
                     adapter.notifyPickState(position);
                 } else {
-                    if (pickedList.size() < PICKED_MEDIA_MAX_SIZE) {
-                        pickedList.add(bean);
-                        adapter.notifyPickState(position);
-                    } else {
-                        showToast(getString(R.string.over_maxinum));
-                        return;
-                    }
-                }
-                if (pickedList.size() == 0) {
-                    chosedNum.setVisibility(View.GONE);
-                } else {
-                    chosedNum.setVisibility(View.VISIBLE);
-                    chosedNum.setText(getString(R.string.send) + "(" + pickedList.size() + "/" + PICKED_MEDIA_MAX_SIZE + ")");
+                    showToast(getString(R.string.over_maxinum));
+                    return;
                 }
             }
+            if (pickedList.size() == 0) {
+                chosedNum.setVisibility(View.GONE);
+            } else {
+                chosedNum.setVisibility(View.VISIBLE);
+                chosedNum.setText(getString(R.string.send) + "(" + pickedList.size() + "/" + PICKED_MEDIA_MAX_SIZE + ")");
+            }
+
         }
     };
 

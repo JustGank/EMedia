@@ -133,12 +133,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             }
 
-
-
-
-
-
-
         } else if (requestCode == IntentUtil.TAKE_VIDEO_REQUEST_CODE) {
             temp = IntentUtil.parserTakedVideo(this, true);
             if (temp != null)
