@@ -36,6 +36,14 @@ public class IntentUtil {
         return tempBean;
     }
 
+    public static List<MediaPickerBean> parserMediaResultData( Intent data){
+        List<MediaPickerBean> tempBean = new ArrayList<>();
+        if( null != data && null != data.getSerializableExtra(MediaPickerActivity.RESULT_LIST)){
+            tempBean.addAll((List) data.getSerializableExtra(MediaPickerActivity.RESULT_LIST));
+        }
+        return tempBean;
+    }
+
     /**
      * 有权限的时候正常向下进行 没有权限的时候返回false由开发者自行处理
      * 此处只做权限校验的操作，权限的请求和反馈有用户自行处理

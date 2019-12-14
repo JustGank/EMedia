@@ -506,10 +506,9 @@ public class VideoRecordFragment extends Fragment {
                             getResources().getString(R.string.video_too_short), Toast.LENGTH_SHORT).show();
                     return;
                 }
-                //录制结束显示翻转摄像头
-                button_ChangeCamera.setVisibility(View.VISIBLE);
+
                 //如果正在录制点击这个按钮表示录制完成
-                finishRecord();
+                finishRecord(true);
             } else {
                 //录制开启后隐藏 反转摄像头
                 button_ChangeCamera.setVisibility(View.GONE);
@@ -548,13 +547,15 @@ public class VideoRecordFragment extends Fragment {
         }
     };
 
-    private void finishRecord() {
+    public void finishRecord(boolean isInterrupt) {
+        //录制结束显示翻转摄像头
+        button_ChangeCamera.setVisibility(View.VISIBLE);
         mediaRecorder.stop(); //停止
         stopChronometer();
         button_capture.setImageResource(R.mipmap.player_record);
         changeRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         releaseMediaRecorder();
-        Toast.makeText(getActivity(), R.string.video_captured, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), isInterrupt?R.string.video_captured:R.string.video_interrupt, Toast.LENGTH_SHORT).show();
         recording = false;
         releaseCamera();
         releaseMediaRecorder();
@@ -724,7 +725,7 @@ public class VideoRecordFragment extends Fragment {
                 String asText = String.format("%02d", countUp / 60) + ":" + String.format("%02d", countUp % 60);
                 textChrono.setText(asText);
                 if (limitTime != 0 && countUp == limitTime) {
-                    finishRecord();
+                    finishRecord(true);
                 }
             }
         });

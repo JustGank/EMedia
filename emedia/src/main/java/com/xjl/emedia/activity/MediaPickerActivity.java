@@ -3,8 +3,10 @@ package com.xjl.emedia.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -21,22 +23,30 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.xjl.emedia.R;
 import com.xjl.emedia.adapter.MediaPickerAdapter;
+import com.xjl.emedia.adapter.PopPicFolderAdapter;
+import com.xjl.emedia.bean.MediaFileBean;
 import com.xjl.emedia.bean.MediaPickerBean;
 import com.xjl.emedia.builder.EPickerBuilder;
+import com.xjl.emedia.popwindow.PicFolderListPopwindow;
 import com.xjl.emedia.utils.FileUtil;
+import com.xjl.emedia.utils.IntentUtil;
+import com.xjl.emedia.utils.ScreenUtil;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -48,22 +58,36 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     private final String TAG = MediaPickerActivity.class.getSimpleName();
 
     public static final String RESULT_LIST = "result_list";
+    public static final String COMPRESS_OPEN = "compress_open";
+    public static final String FINISH_MEDIA_PICKER_ACTIVITY="finish_media_picker_activity";
+
 
     protected RelativeLayout title_contianer;
     protected ImageView ivBack;
     protected TextView title_tv;
     protected TextView chosedNum;
     protected RecyclerView recyclerview;
+    protected RelativeLayout more_container;
+    protected LinearLayout imagesfolder_container;
+    protected TextView all_pic;
+    protected TextView orginal_pic;
+    protected ImageView orginal_pic_select;
+    protected TextView preview;
+
     protected MediaPickerAdapter adapter;
     private List<MediaPickerBean> mediaPickerBeanList = new ArrayList<>();
     private ArrayList<MediaPickerBean> pickedList = new ArrayList<>();
+    private HashMap<String, MediaFileBean> mediaFolderMap = new HashMap<>();
+    private HashMap<String, ArrayList<MediaPickerBean>> mediaFolderListMap = new HashMap<>();
+    private PicFolderListPopwindow popwindow;
+    private PopPicFolderAdapter popPicFolderAdapter;
 
     private final int CODE_FOR_WRITE_PERMISSION = 100;
     private final int LOAD_FINISH_REFRESH = 1001;
     private int PICKED_MEDIA_MAX_SIZE = 9;
     private EPickerBuilder.PickerType pickerType = EPickerBuilder.PickerType.PHOTO_VIDEO;
-    private int titleBackground;
-    private int titleTextColor;
+    private int subjectBackground;
+    private int subjectTextColor;
     private int backImgRes;
     private Class dialog_class;
     private int compressWidth, compressHeight;
@@ -72,7 +96,9 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     private boolean overSizeVisible = true;
     private boolean compressOpen = false;
     private boolean openPreview = false;
+    private Class previewActivity = null;
     private boolean openSkipMemoryCache = false;
+    private boolean openBottomMoreOperate=false;
     private String outputPath;
     /**
      * 图片查询参数
@@ -109,12 +135,18 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
             switch (msg.what) {
                 case LOAD_FINISH_REFRESH:
                     adapter.setList(mediaPickerBeanList);
+                    initFolderPop();
                     break;
             }
         }
     };
 
     private Object waitingDialog;
+
+    private int screentWidth = 0, screenHeight = 0;
+
+    //跨页面关闭广播接收器
+    private FinshActivityReceiver finishActivityReceiver;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -128,16 +160,21 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
 
+        int[] screenSize = ScreenUtil.getScreenSize(this);
+        screentWidth = screenSize[0];
+        screenHeight = screenSize[1];
+
         parserIntent();
         initView();
         getMedia();
+
     }
 
     private void parserIntent() {
         PICKED_MEDIA_MAX_SIZE = getIntent().getIntExtra("max_chose_num", 1);
         pickerType = (EPickerBuilder.PickerType) getIntent().getSerializableExtra("pickerType");
-        titleBackground = getIntent().getIntExtra("resTitleBackground", R.color.title_background);
-        titleTextColor = getIntent().getIntExtra("titleTextColor", android.R.color.white);
+        subjectBackground = getIntent().getIntExtra("resSubjectBackground", R.color.subject_background);
+        subjectTextColor = getIntent().getIntExtra("subjectTextColor", R.color.subject_text_color);
         backImgRes = getIntent().getIntExtra("backImgRes", backImgRes);
         compressOpen = getIntent().getBooleanExtra("openCompress", false);
         outputPath = getIntent().getStringExtra("outputPath");
@@ -156,32 +193,50 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         maxVideoSize = getIntent().getLongExtra("video_max_size", 30 * 1024 * 1024);
         overSizeVisible = getIntent().getBooleanExtra("overSizeVisible", true);
         openPreview = getIntent().getBooleanExtra("openPreview", false);
+        previewActivity = (Class) getIntent().getSerializableExtra("previewActivity");
         openSkipMemoryCache = getIntent().getBooleanExtra("openSkipMemoryCache", false);
+        openBottomMoreOperate=getIntent().getBooleanExtra("openBottomMoreOperate",false);
     }
 
     private void initView() {
+
         ivBack = (ImageView) findViewById(R.id.iv_back);
         ivBack.setOnClickListener(MediaPickerActivity.this);
         ivBack.setImageResource(R.mipmap.ic_menu_back);
         title_contianer = (RelativeLayout) findViewById(R.id.title_contianer);
-        title_contianer.setBackgroundResource(titleBackground);
+        title_contianer.setBackgroundResource(subjectBackground);
         title_tv = (TextView) findViewById(R.id.title_tv);
-        title_tv.setTextColor(getResources().getColor(titleTextColor));
+        title_tv.setTextColor(getResources().getColor(subjectTextColor));
         chosedNum = (TextView) findViewById(R.id.chosed_num);
         chosedNum.setOnClickListener(MediaPickerActivity.this);
         recyclerview = (RecyclerView) findViewById(R.id.recyclerview);
+        more_container = (RelativeLayout) findViewById(R.id.more_container);
+        more_container.setBackgroundResource(subjectBackground);
+        more_container.setVisibility(openBottomMoreOperate?View.VISIBLE:View.GONE);
+        all_pic = (TextView) findViewById(R.id.all_pic);
+        all_pic.setTextColor(getResources().getColor(subjectTextColor));
+        orginal_pic = (TextView) findViewById(R.id.orginal_pic);
+        orginal_pic.setTextColor(getResources().getColor(subjectTextColor));
+        orginal_pic_select = (ImageView) findViewById(R.id.orginal_pic_select);
+        orginal_pic_select.setOnClickListener(MediaPickerActivity.this);
+        orginal_pic_select.setBackgroundResource(compressOpen ? R.mipmap.all_unselected : R.mipmap.all_selected);
+        findViewById(R.id.orginal_pic).setOnClickListener(this);
+        preview = (TextView) findViewById(R.id.preview);
+        preview.setVisibility(previewActivity == null ? View.GONE : View.VISIBLE);
+        preview.setOnClickListener(MediaPickerActivity.this);
+        preview.setTextColor(getResources().getColor(subjectTextColor));
+        imagesfolder_container = (LinearLayout) findViewById(R.id.imagesfolder_container);
+        imagesfolder_container.setOnClickListener(MediaPickerActivity.this);
 
         recyclerview.setLayoutManager(new GridLayoutManager(MediaPickerActivity.this, 4));
         recyclerview.setAdapter(
-                adapter = new MediaPickerAdapter
-                        (MediaPickerActivity
-                                .this, new ArrayList<MediaPickerBean>()
-                                , openPreview, openSkipMemoryCache));
-
+                adapter = new MediaPickerAdapter(MediaPickerActivity.this, new ArrayList<MediaPickerBean>()
+                        , openSkipMemoryCache));
 
         adapter.setOnItemClickListener(medidClickListener);
 
         ((SimpleItemAnimator) recyclerview.getItemAnimator()).setSupportsChangeAnimations(false);
+
     }
 
     private void getMedia() {
@@ -199,7 +254,17 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         }
     }
 
+    private void registReveiver(){
+        finishActivityReceiver=new FinshActivityReceiver();
+
+        IntentFilter intentFilter=new IntentFilter();
+        intentFilter.addAction(FINISH_MEDIA_PICKER_ACTIVITY);
+
+        registerReceiver(finishActivityReceiver,intentFilter);
+    }
+
     private void startGetMediaThread() {
+        mediaFolderMap.clear();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -220,6 +285,8 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
                                 long time = new File(path).lastModified();
                                 mediaPickerBean.data = (int) (time / 1000);
                                 mediaPickerBeanList.add(mediaPickerBean);
+                                putFolderPathToMap(mediaPickerBean);
+
                             }
                         }
                         Log.e(TAG, "startGetMediaThread image cursor length " + mediaPickerBeanList.size());
@@ -240,6 +307,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
                                 mediaPickerBean.data = (int) (new File(mediaPickerBean.mediaFilePath).lastModified() / 1000);
                                 mediaPickerBean.size = videoCursor.getLong(videoCursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE));
                                 mediaPickerBeanList.add(mediaPickerBean);
+                                putFolderPathToMap(mediaPickerBean);
                             }
                         }
                         Log.e(TAG, "startGetMediaThread image cursor length + video cursor length"
@@ -252,9 +320,65 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         }).start();
     }
 
+    private void putFolderPathToMap(MediaPickerBean pickerBean) {
+        if (mediaFolderMap != null) {
+            String folderPath = FileUtil.getFileFolderPath(pickerBean.mediaFilePath);
+            MediaFileBean mediaFileBean = mediaFolderMap.get(folderPath);
+            ArrayList<MediaPickerBean> folderBeans = mediaFolderListMap.get(folderPath);
+            if (mediaFileBean == null) {
+                mediaFileBean = new MediaFileBean(folderPath);
+                mediaFileBean.num = 1;
+                mediaFileBean.coverFilePath = pickerBean.mediaFilePath;
+                mediaFolderMap.put(folderPath, mediaFileBean);
+
+                folderBeans = new ArrayList<>();
+                folderBeans.add(pickerBean);
+                mediaFolderListMap.put(folderPath, folderBeans);
+            } else {
+                mediaFileBean.num++;
+                folderBeans.add(pickerBean);
+            }
+        }
+    }
+
+    private void initFolderPop() {
+        //先添加所有照片的第一个元素
+        List<MediaFileBean> list = new ArrayList<>();
+        MediaFileBean mediaFileBean = new MediaFileBean("");
+        mediaFileBean.folderName = getString(R.string.all_pics);
+        mediaFileBean.num = 0;
+        mediaFileBean.coverFilePath = mediaPickerBeanList.get(0).mediaFilePath;
+        list.add(mediaFileBean);
+        list.addAll(mediaFolderMap.values());
+
+        popwindow = new PicFolderListPopwindow(this, list, R.color.divid_line_color);
+        popPicFolderAdapter = popwindow.getAdapter();
+        popPicFolderAdapter.setOnItemClickListener(picFolderItemClickListener);
+        popwindow.setWidth(screentWidth);
+    }
+
+
+    PopPicFolderAdapter.OnItemClickListener picFolderItemClickListener = new PopPicFolderAdapter.OnItemClickListener() {
+        @Override
+        public void onClick(int position, View v, MediaFileBean mediaFileBean) {
+            if (mediaFileBean.num == 0) {
+                title_tv.setText(R.string.photo_album);
+                adapter.setList(mediaPickerBeanList);
+            } else {
+                title_tv.setText(mediaFileBean.folderName);
+                adapter.setList(mediaFolderListMap.get(mediaFileBean.folderPath));
+            }
+            if (popwindow != null) {
+                popwindow.dismiss();
+            }
+
+        }
+    };
+
+
     MediaPickerAdapter.OnItemClickListener medidClickListener = new MediaPickerAdapter.OnItemClickListener() {
         @Override
-        public void onClicked(int position, MediaPickerBean bean) {
+        public void onSelectedClicked(int position, MediaPickerBean bean) {
 
             if ((bean.type == 1 && bean.getSize() > maxPhotoSize)) {
                 showToast(getString(R.string.photo_over_size));
@@ -279,11 +403,31 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
             }
             if (pickedList.size() == 0) {
                 chosedNum.setVisibility(View.GONE);
+                preview.setVisibility(View.GONE);
             } else {
                 chosedNum.setVisibility(View.VISIBLE);
                 chosedNum.setText(getString(R.string.send) + "(" + pickedList.size() + "/" + PICKED_MEDIA_MAX_SIZE + ")");
+
+                if (previewActivity != null) {
+                    preview.setVisibility(View.VISIBLE);
+                    preview.setText(getString(R.string.preview) + "(" + pickedList.size() + ")");
+                }
+
             }
 
+        }
+
+        @Override
+        public void onCoverClicked(int position, MediaPickerBean bean) {
+            if (previewActivity != null) {
+                postPickedListToPreviewActivity(bean);
+            } else if (openPreview) {
+                if (IntentUtil.isImage(bean.getMediaFilePath())) {
+                    IntentUtil.openLocalImage(MediaPickerActivity.this, bean.getMediaFilePath());
+                } else if (IntentUtil.isVideo(bean.getMediaFilePath())) {
+                    IntentUtil.openLocalVideo(MediaPickerActivity.this, bean.getMediaFilePath());
+                }
+            }
         }
     };
 
@@ -311,9 +455,46 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
                     postResult();
                 }
             }
+        } else if (view.getId() == R.id.imagesfolder_container) {
+            if (popwindow != null) {
+                if (popwindow.isShowing()) {
+                    popwindow.dismiss();
+                } else {
+                    int yPosition = (int) (screenHeight - imagesfolder_container.getHeight() - ScreenUtil.dip2px(this, 320));
+                    popwindow.showAtLocation(orginal_pic_select,
+                            Gravity.TOP | Gravity.LEFT, -1, yPosition);
+                }
+            }
+
+        } else if (view.getId() == R.id.orginal_pic_select || view.getId() == R.id.orginal_pic) {
+            compressOpen = !compressOpen;
+            orginal_pic_select.setBackgroundResource(compressOpen ? R.mipmap.all_unselected : R.mipmap.all_selected);
+        } else if (view.getId() == R.id.preview) {
+            postPickedListToPreviewActivity();
         }
     }
 
+
+    private void postPickedListToPreviewActivity() {
+        if (previewActivity != null) {
+            Intent intent = new Intent(MediaPickerActivity.this, previewActivity);
+            intent.putExtra(RESULT_LIST, pickedList);
+            intent.putExtra(COMPRESS_OPEN, compressOpen);
+            startActivity(intent);
+        }
+
+    }
+
+    private void postPickedListToPreviewActivity(MediaPickerBean mediaPickerBean) {
+        if (previewActivity != null) {
+            ArrayList<MediaPickerBean> tempList = new ArrayList<>();
+            tempList.add(mediaPickerBean);
+            Intent intent = new Intent(MediaPickerActivity.this, previewActivity);
+            intent.putExtra(RESULT_LIST, tempList);
+            intent.putExtra(COMPRESS_OPEN, compressOpen);
+            startActivity(intent);
+        }
+    }
 
     AsyncTask asyncTask = new AsyncTask() {
 
@@ -362,5 +543,29 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     public void setWaitingDialog(Dialog dialog) {
         this.waitingDialog = dialog;
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (popwindow != null && popwindow.isShowing()) {
+            popwindow.dismiss();
+        }
+
+        if(finishActivityReceiver!=null){
+            unregisterReceiver(finishActivityReceiver);
+        }
+
+    }
+
+    private class FinshActivityReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(FINISH_MEDIA_PICKER_ACTIVITY)){
+                finish();
+            }
+        }
+    }
+
+
 
 }

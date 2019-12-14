@@ -134,4 +134,15 @@ public class FileUtil {
         return mVideoFile;
     }
 
+
+    public static String getFileFolderPath(String filePath){
+        String folderPath="";
+        if(!TextUtils.isEmpty(filePath))
+        {
+            int subEndPosition=filePath.lastIndexOf(File.separator);
+            folderPath=filePath.substring(0,subEndPosition);
+        }
+        return folderPath;
+    }
+
 }

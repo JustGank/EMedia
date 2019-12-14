@@ -60,22 +60,22 @@ public class EPickerBuilder {
     }
 
     /**
-     * 设置title的背景
+     * 设置头部和底部两个条的背景颜色
      */
-    private int resTitleBackground = R.color.title_background;
+    private int resSubjectBackground = R.color.subject_background;
 
-    public EPickerBuilder setResTitleBg(int resTitleBackground) {
-        this.resTitleBackground = resTitleBackground;
+    public EPickerBuilder setResSubjectBg(int resSubjectBackground) {
+        this.resSubjectBackground = resSubjectBackground;
         return this;
     }
 
     /**
-     * title文字颜色
+     * 除选择外所有文字的颜色
      */
-    private int titleTextColor = android.R.color.white;
+    private int subjectTextColor = android.R.color.white;
 
-    public EPickerBuilder titleTextColor(int titleTextColor) {
-        this.titleTextColor = titleTextColor;
+    public EPickerBuilder subjectTextColor(int subjectTextColor) {
+        this.subjectTextColor = subjectTextColor;
         return this;
     }
 
@@ -173,6 +173,17 @@ public class EPickerBuilder {
     }
 
     /**
+     * 是否设置PreviewActivity 跳转到自定义页面进行已选照片的预览
+     * */
+    private Class<? extends Activity> previewActivity=null;
+
+    public EPickerBuilder setPreviewActivity(Class<? extends Activity> previewActivity){
+        this.previewActivity=previewActivity;
+        return this;
+    }
+
+
+    /**
      * 是否开启Glide内存缓存
      * */
 
@@ -188,6 +199,16 @@ public class EPickerBuilder {
     }
 
     /**
+     *  是否开启底部更多操作
+     * */
+    private boolean openBottomMoreOperate=false;
+
+    public EPickerBuilder setOpenBottomMoreOperate(boolean openBottomMoreOperate){
+        this.openBottomMoreOperate=openBottomMoreOperate;
+        return this;
+    }
+
+    /**
      * 开启跳转
      */
     public void startPicker(int requestCode) {
@@ -199,8 +220,8 @@ public class EPickerBuilder {
         Intent intent = new Intent(activity, MediaPickerActivity.class);
         intent.putExtra("max_chose_num", max_chose_num);
         intent.putExtra("pickerType", pickerType);
-        intent.putExtra("resTitleBackground", resTitleBackground);
-        intent.putExtra("titleTextColor", titleTextColor);
+        intent.putExtra("resSubjectBackground", resSubjectBackground);
+        intent.putExtra("subjectTextColor", subjectTextColor);
         intent.putExtra("backImgRes", backImgRes);
         intent.putExtra("openCompress", openCompress);
         intent.putExtra("outputPath", outputPath);
@@ -211,7 +232,9 @@ public class EPickerBuilder {
         intent.putExtra("video_max_size", video_max_size);
         intent.putExtra("overSizeVisible", overSizeVisible);
         intent.putExtra("openPreview", openPreview);
+        intent.putExtra("previewActivity",previewActivity);
         intent.putExtra("openSkipMemoryCache", openSkipMemoryCache);
+        intent.putExtra("openBottomMoreOperate",openBottomMoreOperate);
         this.activity.startActivityForResult(intent, RequestCode);
     }
 

@@ -1,7 +1,6 @@
 package com.xjl.emedia.adapter;
 
 import android.app.Activity;
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +12,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.xjl.emedia.R;
 import com.xjl.emedia.bean.MediaPickerBean;
-import com.xjl.emedia.utils.IntentUtil;
 
 import java.util.List;
 
@@ -26,7 +24,6 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
     private Activity activity;
     private LayoutInflater inflater;
     private List<MediaPickerBean> list;
-    private boolean openPreview = false;
     private boolean openSkipMemoryCache = false;
 
     public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list) {
@@ -35,11 +32,10 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
         this.inflater = activity.getLayoutInflater();
     }
 
-    public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list, boolean openPreview, boolean openSkipMemoryCache) {
+    public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list, boolean openSkipMemoryCache) {
         this.activity = activity;
         this.list = list;
         this.inflater = activity.getLayoutInflater();
-        this.openPreview = openPreview;
         this.openSkipMemoryCache = openSkipMemoryCache;
     }
 
@@ -102,20 +98,12 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
         public void onClick(View v) {
             if (v.getId() == R.id.selected_container) {
                 if (null != onItemClickListener) {
-                    onItemClickListener.onClicked(position, list.get(position));
+                    onItemClickListener.onSelectedClicked(position, list.get(position));
                 }
             } else if (v.getId() == R.id.cover) {
-
-
-                if (openPreview) {
-                    if (IntentUtil.isImage(list.get(position).getMediaFilePath())) {
-                        IntentUtil.openLocalImage(activity, list.get(position).getMediaFilePath());
-                    } else if (IntentUtil.isVideo(list.get(position).getMediaFilePath())) {
-                        IntentUtil.openLocalVideo(activity, list.get(position).getMediaFilePath());
-                    }
+                if (null != onItemClickListener) {
+                    onItemClickListener.onCoverClicked(position, list.get(position));
                 }
-
-
             } else if (v.getId() == R.id.container) {
 
             }
@@ -134,7 +122,9 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
     }
 
     public interface OnItemClickListener {
-        public void onClicked(int position, MediaPickerBean bean);
+        public void onSelectedClicked(int position, MediaPickerBean bean);
+
+        public void onCoverClicked(int position, MediaPickerBean bean);
     }
 
     @Override
@@ -159,11 +149,6 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
             time = (TextView) itemView.findViewById(R.id.time);
             container = (RelativeLayout) itemView.findViewById(R.id.container);
         }
-    }
-
-    public static int dip2px(Context context, float dpValue) {
-        final float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (dpValue * scale + 0.5f);
     }
 
 

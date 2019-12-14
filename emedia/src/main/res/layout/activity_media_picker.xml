@@ -14,8 +14,8 @@
             android:id="@+id/iv_back"
             android:layout_width="30dp"
             android:layout_height="match_parent"
-            android:src="@mipmap/ic_menu_back"
-            android:layout_marginLeft="10dp"/>
+            android:layout_marginLeft="10dp"
+            android:src="@mipmap/ic_menu_back" />
 
         <TextView
             android:id="@+id/title_tv"
@@ -42,7 +42,81 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <RelativeLayout
+        android:id="@+id/more_container"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        >
+
+        <LinearLayout
+            android:id="@+id/imagesfolder_container"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            >
+
+            <TextView
+                android:id="@+id/all_pic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15dp"
+                 android:text="@string/all_pics"
+                />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="5dp"
+                android:background="@mipmap/down_arrow"
+                />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/orginal_pic_contianer"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="10dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            >
+
+            <ImageView
+                android:id="@+id/orginal_pic_select"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginRight="5dp"
+                android:background="@mipmap/all_unselected"
+                />
+
+            <TextView
+                android:id="@+id/orginal_pic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="15dp"
+                android:text="@string/original_pics"
+                />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="10dp"
+            />
+
+
+    </RelativeLayout>
 
 
 </LinearLayout>

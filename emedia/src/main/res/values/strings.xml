@@ -12,9 +12,16 @@
     <string name="only_have_one_camera">不支持翻转</string>
     <string name="video_too_short">视频时间过短</string>
     <string name="video_captured">录制成功</string>
+    <string name="video_interrupt">录制中断</string>
     <string name="camera_init_fail">录像初始化失败</string>
     <string name="changing_flashLight_mode">闪光灯模式</string>
     <string name="save_path_null">存储路径为空</string>
     <string name="please_gave_permission">请给与相应权限后重新打开</string>
     <string name="camera_occupancy">摄像头占用中</string>
+    
+    <string name="all_pics">所有照片</string>
+    <string name="original_pics">原图</string>
+    <string name="preview">预览</string>
+    <string name="ticket">张</string>
+    
 </resources>

@@ -40,7 +40,7 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
     public static PreviewFragment getINSTANCE(String filePath) {
         PreviewFragment previewFragment = new PreviewFragment();
         Bundle bundle = new Bundle();
-        bundle.putString("filePath", filePath);
+        bundle.putString("folderPath", filePath);
         previewFragment.setArguments(bundle);
         return previewFragment;
     }
@@ -57,8 +57,8 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_preview, null);
-        filePath = getArguments().getString("filePath");
-        Log.e(TAG, "filePath=" + filePath);
+        filePath = getArguments().getString("folderPath");
+        Log.e(TAG, "folderPath=" + filePath);
         return rootView;
     }
 

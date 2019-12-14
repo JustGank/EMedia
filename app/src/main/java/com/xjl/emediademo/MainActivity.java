@@ -59,13 +59,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.start_album:
                 new EPickerBuilder(this)
                         .setPickerType(EPickerBuilder.PickerType.PHOTO_VIDEO)
-                        .setMaxChoseNum(1)
+                        .setMaxChoseNum(9)
                         .setFilterPhotoMaxSize(10)
                         .setProgressDialogClass(ProgressDialog.class)
                         .openCompress(true, cacheDirPathCompress)
                         .overSizeVisible(true)
                         .setOpenPreview(true)
                         .setOpenSkipMemoryCache(true)
+                        .setOpenBottomMoreOperate(true)
+                        .setPreviewActivity(PreviewActivity.class)
                         .startPicker();
                 break;
             case R.id.take_photo:

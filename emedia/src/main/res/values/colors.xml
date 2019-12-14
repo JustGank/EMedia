@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="title_background">#000000</color>
+    <color name="subject_background">#000000</color>
+
+    <color name="subject_text_color">#ffffff</color>
 
     <color name="recoder_text_color">#00CB0D</color>
 
     <color name="FF00FF00">#ff00FF00</color>
+
+    <color name="divid_line_color">#ffffff</color>
+
 </resources>

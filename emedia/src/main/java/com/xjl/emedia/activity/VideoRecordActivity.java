@@ -1,6 +1,10 @@
 package com.xjl.emedia.activity;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
@@ -12,6 +16,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.xjl.emedia.R;
+import com.xjl.emedia.bean.BroadcastCMD;
 import com.xjl.emedia.fragment.PreviewFragment;
 import com.xjl.emedia.fragment.VideoRecordFragment;
 
@@ -35,6 +40,8 @@ public class VideoRecordActivity extends FragmentActivity {
 
     FragmentManager fragmentManager;
 
+    VideoRecordBroadreceiver videoRecordBroadreceiver;
+
     @SuppressLint("NewApi")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,6 +58,13 @@ public class VideoRecordActivity extends FragmentActivity {
         videoRecordFragment.setOnFinishRecordValueable(onFinishRecordValueable);
         transaction.add(R.id.frame, videoRecordFragment);
         transaction.commitAllowingStateLoss();
+
+        IntentFilter intentFilter=new IntentFilter();
+        intentFilter.addAction(BroadcastCMD.INTERRUPT_RECORD);
+
+        videoRecordBroadreceiver=new VideoRecordBroadreceiver();
+        registerReceiver(videoRecordBroadreceiver,intentFilter);
+
     }
 
     VideoRecordFragment.OnFinishRecordValueable onFinishRecordValueable = new VideoRecordFragment.OnFinishRecordValueable() {
@@ -58,7 +72,7 @@ public class VideoRecordActivity extends FragmentActivity {
         public void onFinish(String filePath) {
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             previewFragment = PreviewFragment.getINSTANCE(filePath);
-            transaction.replace(R.id.frame, previewFragment).commitAllowingStateLoss();
+            transaction.replace(com.xjl.emedia.R.id.frame, previewFragment).commitAllowingStateLoss();
         }
     };
 
@@ -74,6 +88,27 @@ public class VideoRecordActivity extends FragmentActivity {
         super.onPause();
         if (videoRecordFragment != null) {
             videoRecordFragment.releaseCamera();
+        }
+    }
+
+    private class VideoRecordBroadreceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()){
+                case BroadcastCMD.INTERRUPT_RECORD:
+                    videoRecordFragment.finishRecord(false);
+                    finish();
+                    break;
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(videoRecordBroadreceiver!=null){
+            unregisterReceiver(videoRecordBroadreceiver);
+            videoRecordBroadreceiver=null;
         }
     }
 
