@@ -61,7 +61,6 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     public static final String COMPRESS_OPEN = "compress_open";
     public static final String FINISH_MEDIA_PICKER_ACTIVITY="finish_media_picker_activity";
 
-
     protected RelativeLayout title_contianer;
     protected ImageView ivBack;
     protected TextView title_tv;
@@ -167,6 +166,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         parserIntent();
         initView();
         getMedia();
+        registReveiver();
 
     }
 
@@ -363,9 +363,11 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         public void onClick(int position, View v, MediaFileBean mediaFileBean) {
             if (mediaFileBean.num == 0) {
                 title_tv.setText(R.string.photo_album);
+                all_pic.setText(R.string.all_pics);
                 adapter.setList(mediaPickerBeanList);
             } else {
                 title_tv.setText(mediaFileBean.folderName);
+                all_pic.setText(mediaFileBean.folderName);
                 adapter.setList(mediaFolderListMap.get(mediaFileBean.folderPath));
             }
             if (popwindow != null) {
@@ -565,7 +567,5 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
             }
         }
     }
-
-
 
 }
