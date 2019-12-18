@@ -134,7 +134,9 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
             switch (msg.what) {
                 case LOAD_FINISH_REFRESH:
                     adapter.setList(mediaPickerBeanList);
-                    initFolderPop();
+                    if(openBottomMoreOperate){
+                        initFolderPop();
+                    }
                     break;
             }
         }
@@ -321,6 +323,11 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     }
 
     private void putFolderPathToMap(MediaPickerBean pickerBean) {
+        //如果没有开启则不再处理文件夹Map
+        if(!openBottomMoreOperate){
+            return;
+        }
+
         if (mediaFolderMap != null) {
             String folderPath = FileUtil.getFileFolderPath(pickerBean.mediaFilePath);
             MediaFileBean mediaFileBean = mediaFolderMap.get(folderPath);
@@ -342,6 +349,13 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     }
 
     private void initFolderPop() {
+
+        //如果说所有照片的文件夹中的对象数为0，那么就不再进行初始化。
+        if(mediaPickerBeanList==null||mediaPickerBeanList.size()==0){
+            return;
+        }
+
+
         //先添加所有照片的第一个元素
         List<MediaFileBean> list = new ArrayList<>();
         MediaFileBean mediaFileBean = new MediaFileBean("");

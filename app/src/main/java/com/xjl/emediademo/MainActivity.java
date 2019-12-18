@@ -67,6 +67,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         .setOpenPreview(true)
                         .setOpenSkipMemoryCache(true)
                         .setOpenBottomMoreOperate(true)
+
                         .setPreviewActivity(PreviewActivity.class)
                         .startPicker();
                 break;

@@ -550,7 +550,9 @@ public class VideoRecordFragment extends Fragment {
     public void finishRecord(boolean isInterrupt) {
         //录制结束显示翻转摄像头
         button_ChangeCamera.setVisibility(View.VISIBLE);
-        mediaRecorder.stop(); //停止
+        if(mediaRecorder!=null){
+            mediaRecorder.stop(); //停止
+        }
         stopChronometer();
         button_capture.setImageResource(R.mipmap.player_record);
         changeRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
