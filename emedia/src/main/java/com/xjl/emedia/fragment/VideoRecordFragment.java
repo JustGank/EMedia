@@ -2,6 +2,7 @@ package com.xjl.emedia.fragment;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -9,6 +10,7 @@ import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -508,7 +510,7 @@ public class VideoRecordFragment extends Fragment {
                 }
 
                 //如果正在录制点击这个按钮表示录制完成
-                finishRecord(true);
+                finishRecord(false);
             } else {
                 //录制开启后隐藏 反转摄像头
                 button_ChangeCamera.setVisibility(View.GONE);
@@ -551,13 +553,27 @@ public class VideoRecordFragment extends Fragment {
         //录制结束显示翻转摄像头
         button_ChangeCamera.setVisibility(View.VISIBLE);
         if(mediaRecorder!=null){
-            mediaRecorder.stop(); //停止
+            try {
+                mediaRecorder.stop();
+            }catch (Exception e){
+                Log.e(TAG,e.toString());
+            }
+            //停止
         }
         stopChronometer();
         button_capture.setImageResource(R.mipmap.player_record);
         changeRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         releaseMediaRecorder();
-        Toast.makeText(getActivity(), isInterrupt?R.string.video_captured:R.string.video_interrupt, Toast.LENGTH_SHORT).show();
+        if(getActivity()!=null){
+            Toast.makeText(getActivity(), isInterrupt?R.string.video_interrupt:R.string.video_captured, Toast.LENGTH_SHORT).show();
+        }
+
+        if(isInterrupt&&getActivity()!=null){
+            File file=new File(filePath);
+            getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                    Uri.fromFile(file)));
+        }
+
         recording = false;
         releaseCamera();
         releaseMediaRecorder();
@@ -577,7 +593,9 @@ public class VideoRecordFragment extends Fragment {
     }
 
     private void changeRequestedOrientation(int orientation) {
-        getActivity().setRequestedOrientation(orientation);
+        if(getActivity()!=null){
+            getActivity().setRequestedOrientation(orientation);
+        }
     }
 
     private void releaseMediaRecorder() {
@@ -727,7 +745,7 @@ public class VideoRecordFragment extends Fragment {
                 String asText = String.format("%02d", countUp / 60) + ":" + String.format("%02d", countUp % 60);
                 textChrono.setText(asText);
                 if (limitTime != 0 && countUp == limitTime) {
-                    finishRecord(true);
+                    finishRecord(false);
                 }
             }
         });

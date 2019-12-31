@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -94,9 +95,10 @@ public class VideoRecordActivity extends FragmentActivity {
     private class VideoRecordBroadreceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.e(TAG,"VideoRecordBroadreceiver onReceive ");
             switch (intent.getAction()){
                 case BroadcastCMD.INTERRUPT_RECORD:
-                    videoRecordFragment.finishRecord(false);
+                    videoRecordFragment.finishRecord(true);
                     finish();
                     break;
             }
@@ -106,6 +108,7 @@ public class VideoRecordActivity extends FragmentActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.e(TAG,"onDestroy");
         if(videoRecordBroadreceiver!=null){
             unregisterReceiver(videoRecordBroadreceiver);
             videoRecordBroadreceiver=null;
