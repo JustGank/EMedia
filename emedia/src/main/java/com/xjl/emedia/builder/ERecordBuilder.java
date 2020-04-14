@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import com.xjl.emedia.activity.VideoRecordActivity;
+import com.xjl.emedia.impl.PreOnClickListener;
 
 import java.io.Serializable;
 
@@ -108,6 +109,21 @@ public class ERecordBuilder implements Serializable {
         return isShowRatio;
     }
 
+
+    private Class<? extends PreOnClickListener> preOnClickListener=null;
+
+
+    public ERecordBuilder setPreOnClickListener(Class<? extends PreOnClickListener> preOnClickListener){
+        this.preOnClickListener=preOnClickListener;
+        return this;
+    }
+
+    public Class<? extends PreOnClickListener> getPreOnClickListener(){
+        return preOnClickListener;
+    }
+
+
+
     public void startRecord(String savePath) {
         /**
          * 保证录制时间不小于最小时间
@@ -123,6 +139,7 @@ public class ERecordBuilder implements Serializable {
         intent.putExtra("savePath", this.savePath);
         intent.putExtra("isShowLight", this.isShowLight);
         intent.putExtra("isShowRatio", this.isShowRatio);
+        intent.putExtra("preOnClickListener",this.preOnClickListener);
         activity.startActivityForResult(intent, RequestCode);
     }
 

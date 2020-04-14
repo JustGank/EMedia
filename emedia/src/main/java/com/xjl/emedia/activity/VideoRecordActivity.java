@@ -49,8 +49,8 @@ public class VideoRecordActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_record);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        frame = (FrameLayout) findViewById(R.id.frame);
 
+        frame = (FrameLayout) findViewById(R.id.frame);
 
         fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -68,7 +68,8 @@ public class VideoRecordActivity extends FragmentActivity {
 
     }
 
-    VideoRecordFragment.OnFinishRecordValueable onFinishRecordValueable = new VideoRecordFragment.OnFinishRecordValueable() {
+    VideoRecordFragment.OnFinishRecordValueable onFinishRecordValueable =
+            new VideoRecordFragment.OnFinishRecordValueable() {
         @Override
         public void onFinish(String filePath) {
             FragmentTransaction transaction = fragmentManager.beginTransaction();

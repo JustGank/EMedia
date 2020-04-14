@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.xjl.emedia.bean.MediaPickerBean;
 import com.xjl.emedia.builder.EPickerBuilder;
 import com.xjl.emedia.builder.ERecordBuilder;
+import com.xjl.emedia.impl.RecordPreOnClickListener;
 import com.xjl.emedia.utils.FileChooseUtil;
 import com.xjl.emedia.utils.IntentUtil;
 import com.xjl.emedia.utils.PicUtils;
@@ -91,6 +92,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         .setQuality(ERecordBuilder.RecordQuality.ALL)
                         .setShowLight(false)
                         .setShowRatio(false)
+                        .setPreOnClickListener(RecordPreOnClickListener.class)
                         .startRecord(cacheDirPathVideos);
                 break;
             case R.id.take_file:
@@ -126,8 +128,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         } else if (requestCode == IntentUtil.TAKE_PHOTO_REQUEST_CODE) {
             temp = IntentUtil.parserTakedPhoto(this, true);
-            if (temp != null)
-            {
+            if (temp != null) {
                 Log.e(TAG, temp.exists() ? "Image take success,file path:" + temp.getAbsolutePath() : "Image file not exist!");
 
                 PicUtils.readPictureDegree(temp.getAbsolutePath());
@@ -153,4 +154,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         }
     }
+
+
 }

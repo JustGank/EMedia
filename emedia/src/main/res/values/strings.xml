@@ -10,6 +10,7 @@
     <string name="dont_have_front_camera">未发现前置摄像头</string>
     <string name="fail_when_camera_try_autofocus">自动对焦失败:%1$s</string>
     <string name="only_have_one_camera">不支持翻转</string>
+    <string name="click_too_fast">点击过快</string>
     <string name="video_too_short">视频时间过短</string>
     <string name="video_captured">录制成功</string>
     <string name="video_interrupt">录制中断</string>

@@ -37,10 +37,12 @@ import android.widget.Toast;
 import com.xjl.emedia.R;
 import com.xjl.emedia.activity.VideoRecordActivity;
 import com.xjl.emedia.builder.ERecordBuilder;
+import com.xjl.emedia.impl.PreOnClickListener;
 import com.xjl.emedia.widget.CameraPreview;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +73,10 @@ public class VideoRecordFragment extends Fragment {
     private int recordMinTime, limitTime;
     private ERecordBuilder.RecordQuality recordQuality;
     private String savePath;
+
+
+    private PreOnClickListener preOnClickListener=null;
+
     /**
      * 初始化控件 录制页面的控件
      */
@@ -111,6 +117,17 @@ public class VideoRecordFragment extends Fragment {
         savePath = getActivity().getIntent().getStringExtra("savePath");
         isShowLight = getActivity().getIntent().getBooleanExtra("isShowLight", true);
         isShowRatio = getActivity().getIntent().getBooleanExtra("isShowRatio", true);
+
+        Class preOnClickListenerClass=(Class) getActivity().getIntent().getSerializableExtra("preOnClickListener");
+        Log.e(TAG,"preOnClickListenerClass is null="+(preOnClickListenerClass==null));
+        if(preOnClickListenerClass!=null){
+            try {
+                preOnClickListener = (PreOnClickListener) preOnClickListenerClass.getConstructor().newInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
 
         if (TextUtils.isEmpty(savePath)) {
             Toast.makeText(getActivity(), getResources().getString(R.string.save_path_null), Toast.LENGTH_SHORT).show();
@@ -171,9 +188,9 @@ public class VideoRecordFragment extends Fragment {
         });
     }
 
-    private final int focus_delay_time=1000;
+    private final int focus_delay_time = 1000;
 
-    private void autoFocus(){
+    private void autoFocus() {
         final DisplayMetrics dm = getResources().getDisplayMetrics();
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -199,9 +216,9 @@ public class VideoRecordFragment extends Fragment {
 
                     mCamera.setParameters(parameters);
                     //修改自动对焦模式 录像自动对焦开启后 不能再使用 aotuFocus 会失败
-                   //mCamera.autoFocus(mAutoFocusTakePictureCallback);
+                    //mCamera.autoFocus(mAutoFocusTakePictureCallback);
                 } else {
-                   //mCamera.autoFocus(mAutoFocusTakePictureCallback);
+                    //mCamera.autoFocus(mAutoFocusTakePictureCallback);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -447,6 +464,17 @@ public class VideoRecordFragment extends Fragment {
     View.OnClickListener switchCameraListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+
+            if (preOnClickListener != null) {
+                if (!preOnClickListener.preOnClick(v, getActivity())) {
+                    return;
+                }
+            }else
+            {
+                Log.e(TAG,"switchCameraListener preOnClickListener is null ");
+            }
+
+
             if (!recording) {
                 int camerasNumber = Camera.getNumberOfCameras();
                 if (camerasNumber > 1) {
@@ -552,11 +580,11 @@ public class VideoRecordFragment extends Fragment {
     public void finishRecord(boolean isInterrupt) {
         //录制结束显示翻转摄像头
         button_ChangeCamera.setVisibility(View.VISIBLE);
-        if(mediaRecorder!=null){
+        if (mediaRecorder != null) {
             try {
                 mediaRecorder.stop();
-            }catch (Exception e){
-                Log.e(TAG,e.toString());
+            } catch (Exception e) {
+                Log.e(TAG, e.toString());
             }
             //停止
         }
@@ -564,14 +592,18 @@ public class VideoRecordFragment extends Fragment {
         button_capture.setImageResource(R.mipmap.player_record);
         changeRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         releaseMediaRecorder();
-        if(getActivity()!=null){
-            Toast.makeText(getActivity(), isInterrupt?R.string.video_interrupt:R.string.video_captured, Toast.LENGTH_SHORT).show();
+        if (getActivity() != null) {
+            Toast.makeText(getActivity(), isInterrupt ? R.string.video_interrupt : R.string.video_captured, Toast.LENGTH_SHORT).show();
         }
 
-        if(isInterrupt&&getActivity()!=null){
-            File file=new File(filePath);
-            getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                    Uri.fromFile(file)));
+        if (isInterrupt && getActivity() != null) {
+            File file = new File(filePath);
+            if (countUp < recordMinTime) {
+                file.delete();
+            } else {
+                getActivity().sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                        Uri.fromFile(file)));
+            }
         }
 
         recording = false;
@@ -593,7 +625,7 @@ public class VideoRecordFragment extends Fragment {
     }
 
     private void changeRequestedOrientation(int orientation) {
-        if(getActivity()!=null){
+        if (getActivity() != null) {
             getActivity().setRequestedOrientation(orientation);
         }
     }
