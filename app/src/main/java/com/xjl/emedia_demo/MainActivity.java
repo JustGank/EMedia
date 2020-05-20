@@ -1,4 +1,4 @@
-package com.xjl.emediademo;
+package com.xjl.emedia_demo;
 
 import android.Manifest;
 import android.app.Activity;
