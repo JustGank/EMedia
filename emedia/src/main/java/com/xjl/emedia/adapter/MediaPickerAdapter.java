@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.xjl.emedia.R;
 import com.xjl.emedia.bean.MediaPickerBean;
 
@@ -25,11 +26,13 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
     private LayoutInflater inflater;
     private List<MediaPickerBean> list;
     private boolean openSkipMemoryCache = false;
+    private RequestOptions requestOptions;
 
     public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list) {
         this.activity = activity;
         this.list = list;
         this.inflater = activity.getLayoutInflater();
+        initRequestOptions();
     }
 
     public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list, boolean openSkipMemoryCache) {
@@ -37,8 +40,14 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
         this.list = list;
         this.inflater = activity.getLayoutInflater();
         this.openSkipMemoryCache = openSkipMemoryCache;
+        initRequestOptions();
     }
 
+    private void initRequestOptions(){
+        this.requestOptions=new RequestOptions();
+        this.requestOptions.skipMemoryCache(openSkipMemoryCache);
+        this.requestOptions.centerCrop();
+    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -53,8 +62,7 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
         if(!holder.coverUrl.equals(mediaPickerBean.getMediaFilePath())){
             Glide.with(activity)
                     .load("file://" + mediaPickerBean.getMediaFilePath())
-                    .skipMemoryCache(openSkipMemoryCache)
-                    .centerCrop()
+                    .apply(requestOptions)
                     .into(holder.cover);
 
             holder.coverUrl=mediaPickerBean.getMediaFilePath();

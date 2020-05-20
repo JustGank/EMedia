@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.xjl.emedia.R;
 import com.xjl.emedia.activity.VideoRecordActivity;
 import com.xjl.emedia.utils.IntentUtil;
@@ -36,6 +37,7 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
     private View rootView;
 
     private String filePath;
+    private RequestOptions requestOptions;
 
     public static PreviewFragment getINSTANCE(String filePath) {
         PreviewFragment previewFragment = new PreviewFragment();
@@ -52,6 +54,9 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        requestOptions = new RequestOptions();
+        requestOptions.skipMemoryCache(false);
+        requestOptions.centerCrop();
     }
 
     @Override
@@ -75,8 +80,8 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
         playerLayout = (RelativeLayout) rootView.findViewById(R.id.player_layout);
 
         Glide.with(getActivity()).load("file://" + filePath)
-                .skipMemoryCache(false)
-                .centerCrop().into(playerBackground);
+                .apply(requestOptions)
+                .into(playerBackground);
 
     }
 
@@ -97,7 +102,7 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    public void onKeyDown(){
+    public void onKeyDown() {
         File file = new File(filePath);
         file.delete();
         getActivity().setResult(VideoRecordActivity.RESULT_CODE_FOR_RECORD_VIDEO_CANCEL);

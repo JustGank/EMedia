@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.xjl.emedia.R;
 import com.xjl.emedia.bean.MediaFileBean;
 
@@ -25,11 +26,15 @@ public class PopPicFolderAdapter extends RecyclerView.Adapter<PopPicFolderAdapte
 
     int divid_line_color;
 
+    private RequestOptions requestOptions;
+
     public PopPicFolderAdapter(List<MediaFileBean> list, Activity activity, int divid_line_color) {
         this.list = list;
         this.activity = activity;
-        inflater = this.activity.getLayoutInflater();
+        this.inflater = this.activity.getLayoutInflater();
         this.divid_line_color = divid_line_color;
+        this.requestOptions = new RequestOptions();
+        this.requestOptions.centerCrop();
     }
 
     @Override
@@ -42,7 +47,7 @@ public class PopPicFolderAdapter extends RecyclerView.Adapter<PopPicFolderAdapte
         MediaFileBean mediaFileBean = list.get(position);
 
         Glide.with(activity).load("file://" + mediaFileBean.coverFilePath)
-                .centerCrop()
+                .apply(requestOptions)
                 .into(holder.cover);
 
         holder.title.setText(mediaFileBean.folderName);
@@ -72,8 +77,8 @@ public class PopPicFolderAdapter extends RecyclerView.Adapter<PopPicFolderAdapte
         @Override
         public void onClick(View v) {
             if (v.getId() == R.id.container) {
-                if(onItemClickListener!=null){
-                    onItemClickListener.onClick(position,container,list.get(position));
+                if (onItemClickListener != null) {
+                    onItemClickListener.onClick(position, container, list.get(position));
                 }
             }
         }
@@ -81,13 +86,13 @@ public class PopPicFolderAdapter extends RecyclerView.Adapter<PopPicFolderAdapte
 
     private OnItemClickListener onItemClickListener;
 
-    public void setOnItemClickListener(OnItemClickListener onItemClickListener){
-        this.onItemClickListener=onItemClickListener;
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
     }
 
     public interface OnItemClickListener {
 
-        public void onClick(int position, View v,MediaFileBean mediaFileBean);
+        public void onClick(int position, View v, MediaFileBean mediaFileBean);
 
     }
 
