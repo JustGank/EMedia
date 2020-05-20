@@ -74,7 +74,7 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
         select.setOnClickListener(PreviewFragment.this);
         playerLayout = (RelativeLayout) rootView.findViewById(R.id.player_layout);
 
-        Glide.with(this).load("file://" + filePath)
+        Glide.with(getActivity()).load("file://" + filePath)
                 .skipMemoryCache(false)
                 .centerCrop().into(playerBackground);
 

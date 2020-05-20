@@ -285,7 +285,7 @@ public class VideoRecordFragment extends Fragment {
 
     //检查设备是否有摄像头
     private boolean hasCamera(Context context) {
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
             return true;
         } else {
             return false;
