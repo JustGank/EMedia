@@ -34,7 +34,9 @@ new EPickerBuilder(this)
 
 实现效果
 
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/2020052715315996.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTA0NTE5OTA=,size_16,color_FFFFFF,t_70#pic_center)
+
 
 **注：Titlebar和主题颜色演示可以自定义的。**
 
@@ -61,7 +63,9 @@ filePath = IntentUtil.makeVideo(this, cacheDirPathVideos);
 
 目前自定义录像支持：闪光灯、分辨率、翻转摄像头、最小录制时间、最长录制时间、防抖、录像后预览等功能。
 
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200527153906956.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTA0NTE5OTA=,size_16,color_FFFFFF,t_70#pic_center)
+
 
 启动样例：
 ```java
