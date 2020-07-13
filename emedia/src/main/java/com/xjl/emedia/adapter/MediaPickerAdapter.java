@@ -1,13 +1,14 @@
 package com.xjl.emedia.adapter;
 
 import android.app.Activity;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -27,6 +28,7 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
     private List<MediaPickerBean> list;
     private boolean openSkipMemoryCache = false;
     private RequestOptions requestOptions;
+    private int itemHeight = 0;
 
     public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list) {
         this.activity = activity;
@@ -35,16 +37,17 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
         initRequestOptions();
     }
 
-    public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list, boolean openSkipMemoryCache) {
+    public MediaPickerAdapter(Activity activity, List<MediaPickerBean> list, boolean openSkipMemoryCache, int itemHeight) {
         this.activity = activity;
         this.list = list;
         this.inflater = activity.getLayoutInflater();
         this.openSkipMemoryCache = openSkipMemoryCache;
         initRequestOptions();
+        this.itemHeight = itemHeight;
     }
 
-    private void initRequestOptions(){
-        this.requestOptions=new RequestOptions();
+    private void initRequestOptions() {
+        this.requestOptions = new RequestOptions();
         this.requestOptions.skipMemoryCache(openSkipMemoryCache);
         this.requestOptions.centerCrop();
     }
@@ -59,14 +62,19 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
 
         MediaPickerBean mediaPickerBean = list.get(position);
 
-        if(!holder.coverUrl.equals(mediaPickerBean.getMediaFilePath())){
+        if (!holder.coverUrl.equals(mediaPickerBean.getMediaFilePath())) {
             Glide.with(activity)
                     .load("file://" + mediaPickerBean.getMediaFilePath())
                     .apply(requestOptions)
                     .into(holder.cover);
 
-            holder.coverUrl=mediaPickerBean.getMediaFilePath();
+            holder.coverUrl = mediaPickerBean.getMediaFilePath();
         }
+
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) holder.cover.getLayoutParams();
+        layoutParams.height = itemHeight;
+
+        holder.cover.setLayoutParams(layoutParams);
 
         holder.selected.setBackgroundResource(mediaPickerBean.isPicked
                 ? R.mipmap.image_choose : R.mipmap.image_not_chose);
@@ -77,7 +85,6 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
             holder.time.setVisibility(View.VISIBLE);
             holder.time.setText(mediaPickerBean.getDuration());
         }
-
 
         new Listener(holder.container, position);
     }
@@ -147,7 +154,7 @@ public class MediaPickerAdapter extends RecyclerView.Adapter<MediaPickerAdapter.
         protected ImageView selected;
         protected TextView time;
         protected RelativeLayout container;
-        protected String coverUrl="";
+        protected String coverUrl = "";
 
 
         public ViewHolder(View itemView) {

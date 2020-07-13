@@ -1,9 +1,9 @@
 package com.xjl.emedia_demo;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -11,6 +11,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.xjl.emedia.bean.MediaPickerBean;
 import com.xjl.emedia.builder.EPickerBuilder;
@@ -23,7 +25,7 @@ import com.xjl.emedia.utils.PicUtils;
 import java.io.File;
 import java.util.List;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final String TAG = MainActivity.class.getSimpleName();
 
@@ -69,6 +71,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         .setOpenSkipMemoryCache(true)
                         .setOpenBottomMoreOperate(true)
                         .setPreviewActivity(PreviewActivity.class)
+                        .setrowNum(5)
+                        .setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER)
                         .startPicker();
                 break;
             case R.id.take_photo:

@@ -1,10 +1,11 @@
 package com.xjl.emedia_demo;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.xjl.emedia.activity.MediaPickerActivity;
 import com.xjl.emedia.adapter.MediaPickerAdapter;
@@ -13,7 +14,7 @@ import com.xjl.emedia.utils.IntentUtil;
 
 import java.util.List;
 
-public class PreviewActivity extends Activity {
+public class PreviewActivity extends AppCompatActivity {
 
     private static final String TAG = "PreviewActivity";
 

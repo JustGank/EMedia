@@ -7,14 +7,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PersistableBundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.xjl.emedia.R;
 import com.xjl.emedia.bean.BroadcastCMD;
@@ -25,7 +26,7 @@ import com.xjl.emedia.fragment.VideoRecordFragment;
  * Created by x33664 on 2019/2/13.
  */
 
-public class VideoRecordActivity extends FragmentActivity {
+public class VideoRecordActivity extends AppCompatActivity {
 
     private static final String TAG = VideoRecordActivity.class.getSimpleName();
 

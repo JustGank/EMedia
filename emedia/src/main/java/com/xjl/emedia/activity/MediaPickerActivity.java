@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -16,12 +17,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -30,6 +25,13 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.xjl.emedia.R;
 import com.xjl.emedia.adapter.MediaPickerAdapter;
@@ -59,7 +61,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
 
     public static final String RESULT_LIST = "result_list";
     public static final String COMPRESS_OPEN = "compress_open";
-    public static final String FINISH_MEDIA_PICKER_ACTIVITY="finish_media_picker_activity";
+    public static final String FINISH_MEDIA_PICKER_ACTIVITY = "finish_media_picker_activity";
 
     protected RelativeLayout title_contianer;
     protected ImageView ivBack;
@@ -97,8 +99,10 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     private boolean openPreview = false;
     private Class previewActivity = null;
     private boolean openSkipMemoryCache = false;
-    private boolean openBottomMoreOperate=false;
+    private boolean openBottomMoreOperate = false;
     private String outputPath;
+    private int rowNum = 4;
+
     /**
      * 图片查询参数
      */
@@ -134,7 +138,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
             switch (msg.what) {
                 case LOAD_FINISH_REFRESH:
                     adapter.setList(mediaPickerBeanList);
-                    if(openBottomMoreOperate){
+                    if (openBottomMoreOperate) {
                         initFolderPop();
                     }
                     break;
@@ -149,8 +153,12 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     //跨页面关闭广播接收器
     private FinshActivityReceiver finishActivityReceiver;
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        int orientation=getIntent().getIntExtra("orientation", ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        Log.e(TAG,"orientation="+orientation);
+        setRequestedOrientation(orientation);
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_media_picker);
         if (Build.VERSION.SDK_INT >= 21) {
@@ -197,11 +205,11 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         openPreview = getIntent().getBooleanExtra("openPreview", false);
         previewActivity = (Class) getIntent().getSerializableExtra("previewActivity");
         openSkipMemoryCache = getIntent().getBooleanExtra("openSkipMemoryCache", false);
-        openBottomMoreOperate=getIntent().getBooleanExtra("openBottomMoreOperate",false);
+        openBottomMoreOperate = getIntent().getBooleanExtra("openBottomMoreOperate", false);
+        rowNum = getIntent().getIntExtra("rowNum", 4);
     }
 
     private void initView() {
-
         ivBack = (ImageView) findViewById(R.id.iv_back);
         ivBack.setOnClickListener(MediaPickerActivity.this);
         ivBack.setImageResource(R.mipmap.ic_menu_back);
@@ -214,7 +222,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         recyclerview = (RecyclerView) findViewById(R.id.recyclerview);
         more_container = (RelativeLayout) findViewById(R.id.more_container);
         more_container.setBackgroundResource(subjectBackground);
-        more_container.setVisibility(openBottomMoreOperate?View.VISIBLE:View.GONE);
+        more_container.setVisibility(openBottomMoreOperate ? View.VISIBLE : View.GONE);
         all_pic = (TextView) findViewById(R.id.all_pic);
         all_pic.setTextColor(getResources().getColor(subjectTextColor));
         orginal_pic = (TextView) findViewById(R.id.orginal_pic);
@@ -229,11 +237,16 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         preview.setTextColor(getResources().getColor(subjectTextColor));
         imagesfolder_container = (LinearLayout) findViewById(R.id.imagesfolder_container);
         imagesfolder_container.setOnClickListener(MediaPickerActivity.this);
+        /**
+         * 根据一行的显示数量控制item的高
+         * */
 
-        recyclerview.setLayoutManager(new GridLayoutManager(MediaPickerActivity.this, 4));
+        int itemHeight = screentWidth / rowNum;
+
+        recyclerview.setLayoutManager(new GridLayoutManager(MediaPickerActivity.this, rowNum));
         recyclerview.setAdapter(
                 adapter = new MediaPickerAdapter(MediaPickerActivity.this, new ArrayList<MediaPickerBean>()
-                        , openSkipMemoryCache));
+                        , openSkipMemoryCache, itemHeight));
 
         adapter.setOnItemClickListener(medidClickListener);
 
@@ -256,13 +269,13 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         }
     }
 
-    private void registReveiver(){
-        finishActivityReceiver=new FinshActivityReceiver();
+    private void registReveiver() {
+        finishActivityReceiver = new FinshActivityReceiver();
 
-        IntentFilter intentFilter=new IntentFilter();
+        IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(FINISH_MEDIA_PICKER_ACTIVITY);
 
-        registerReceiver(finishActivityReceiver,intentFilter);
+        registerReceiver(finishActivityReceiver, intentFilter);
     }
 
     private void startGetMediaThread() {
@@ -324,7 +337,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
 
     private void putFolderPathToMap(MediaPickerBean pickerBean) {
         //如果没有开启则不再处理文件夹Map
-        if(!openBottomMoreOperate){
+        if (!openBottomMoreOperate) {
             return;
         }
 
@@ -351,7 +364,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     private void initFolderPop() {
 
         //如果说所有照片的文件夹中的对象数为0，那么就不再进行初始化。
-        if(mediaPickerBeanList==null||mediaPickerBeanList.size()==0){
+        if (mediaPickerBeanList == null || mediaPickerBeanList.size() == 0) {
             return;
         }
 
@@ -404,7 +417,6 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
                 return;
             }
 
-
             if (pickedList.contains(bean)) {
                 pickedList.remove(bean);
                 adapter.notifyPickState(position);
@@ -417,6 +429,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
                     return;
                 }
             }
+
             if (pickedList.size() == 0) {
                 chosedNum.setVisibility(View.GONE);
                 preview.setVisibility(View.GONE);
@@ -567,16 +580,16 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
             popwindow.dismiss();
         }
 
-        if(finishActivityReceiver!=null){
+        if (finishActivityReceiver != null) {
             unregisterReceiver(finishActivityReceiver);
         }
 
     }
 
-    private class FinshActivityReceiver extends BroadcastReceiver{
+    private class FinshActivityReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals(FINISH_MEDIA_PICKER_ACTIVITY)){
+            if (intent.getAction().equals(FINISH_MEDIA_PICKER_ACTIVITY)) {
                 finish();
             }
         }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.text.TextUtils;
 
 import com.xjl.emedia.R;
@@ -174,18 +175,18 @@ public class EPickerBuilder {
 
     /**
      * 是否设置PreviewActivity 跳转到自定义页面进行已选照片的预览
-     * */
-    private Class<? extends Activity> previewActivity=null;
+     */
+    private Class<? extends Activity> previewActivity = null;
 
-    public EPickerBuilder setPreviewActivity(Class<? extends Activity> previewActivity){
-        this.previewActivity=previewActivity;
+    public EPickerBuilder setPreviewActivity(Class<? extends Activity> previewActivity) {
+        this.previewActivity = previewActivity;
         return this;
     }
 
 
     /**
      * 是否开启Glide内存缓存
-     * */
+     */
 
     private boolean openSkipMemoryCache = false;
 
@@ -200,11 +201,11 @@ public class EPickerBuilder {
 
     /**
      *  是否开启底部更多操作
-     * */
-    private boolean openBottomMoreOperate=false;
+     */
+    private boolean openBottomMoreOperate = false;
 
-    public EPickerBuilder setOpenBottomMoreOperate(boolean openBottomMoreOperate){
-        this.openBottomMoreOperate=openBottomMoreOperate;
+    public EPickerBuilder setOpenBottomMoreOperate(boolean openBottomMoreOperate) {
+        this.openBottomMoreOperate = openBottomMoreOperate;
         return this;
     }
 
@@ -214,6 +215,35 @@ public class EPickerBuilder {
     public void startPicker(int requestCode) {
         this.RequestCode = requestCode;
         startPicker();
+    }
+
+    /**
+     * 设置每行显示图片的个数
+     */
+    private int rowNum = 4;
+
+    public EPickerBuilder setrowNum(int rowNum) {
+        this.rowNum = rowNum;
+        return this;
+    }
+
+    public int getRowNum() {
+        return this.rowNum;
+    }
+
+    /**
+     * 设置屏幕朝向 强制横屏 强制竖屏 跟随系统 默认跟随系统
+     * 传系统值就可以
+     */
+    private int orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+
+    public EPickerBuilder setScreenOrientation(int orientation) {
+        this.orientation = orientation;
+        return this;
+    }
+
+    public int getScreenOrientation() {
+        return this.orientation;
     }
 
     public void startPicker() {
@@ -232,9 +262,11 @@ public class EPickerBuilder {
         intent.putExtra("video_max_size", video_max_size);
         intent.putExtra("overSizeVisible", overSizeVisible);
         intent.putExtra("openPreview", openPreview);
-        intent.putExtra("previewActivity",previewActivity);
+        intent.putExtra("previewActivity", previewActivity);
         intent.putExtra("openSkipMemoryCache", openSkipMemoryCache);
-        intent.putExtra("openBottomMoreOperate",openBottomMoreOperate);
+        intent.putExtra("openBottomMoreOperate", openBottomMoreOperate);
+        intent.putExtra("rowNum", rowNum);
+        intent.putExtra("orientation", orientation);
         this.activity.startActivityForResult(intent, RequestCode);
     }
 

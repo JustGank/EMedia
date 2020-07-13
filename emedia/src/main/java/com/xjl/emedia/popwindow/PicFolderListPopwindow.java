@@ -1,11 +1,12 @@
 package com.xjl.emedia.popwindow;
 
 import android.app.Activity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.PopupWindow;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.xjl.emedia.R;
 import com.xjl.emedia.adapter.PopPicFolderAdapter;
