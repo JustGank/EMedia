@@ -35,7 +35,7 @@ public class ERecordBuilder implements Serializable {
         if (unitSeconds < 0) {
             this.limitTime = 0;
         } else {
-            this.limitTime = unitSeconds;
+            this.limitTime = unitSeconds+1;
         }
         return this;
     }

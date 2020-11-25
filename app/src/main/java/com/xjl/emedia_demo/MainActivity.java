@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.take_video_custom:
                 new ERecordBuilder(MainActivity.this)
                         .setRecordMinTime(3)
-                        .setLimitTime(0)
+                        .setLimitTime(20)
                         .setQuality(ERecordBuilder.RecordQuality.ALL)
                         .setShowLight(false)
                         .setShowRatio(false)
@@ -157,6 +157,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e(TAG, filePath + "  Authority=" + data.getData().getAuthority());
             }
         }
+
+        if(requestCode==1001){
+            new File(cacheDirPath).mkdirs();
+            new File(cacheDirPathCompress).mkdirs();
+            new File(cacheDirPathImage).mkdirs();
+            new File(cacheDirPathVideos).mkdirs();
+        }
+
+
     }
 
 

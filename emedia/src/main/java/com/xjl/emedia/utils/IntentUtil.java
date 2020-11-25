@@ -136,6 +136,11 @@ public class IntentUtil {
         return makeVideo(activity, videoPath, requestCode, 1, 30);
     }
 
+    public static String makeVideo(Activity activity, String videoPath,int duration, int requestCode) {
+        TAKE_VIDEO_REQUEST_CODE = requestCode;
+        return makeVideo(activity, videoPath, requestCode, 1, duration);
+    }
+
     @SuppressLint("NewApi")
     public static String makeVideo(Activity activity, String videoPath, int requestCode, int videoQuality, int durationSeconds) {
         if (activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
@@ -149,7 +154,8 @@ public class IntentUtil {
             // 保存录像到指定的路径
             File file = FileUtil.createVideoFile(videoPath);
 
-            Uri uri = Uri.fromFile(file);
+            Uri uri = FileProvider.getUriForFile(activity,activity.getPackageName() + ".provider",file);
+
             intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
             intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, durationSeconds);
             if (videoQuality < 0) {
