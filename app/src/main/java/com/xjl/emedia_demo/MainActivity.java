@@ -123,6 +123,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
+        if (requestCode == 1001) {
+            new File(cacheDirPath).mkdirs();
+            new File(cacheDirPathCompress).mkdirs();
+            new File(cacheDirPathImage).mkdirs();
+            new File(cacheDirPathVideos).mkdirs();
+        }
+
 
         File temp;
         if (requestCode == EPickerBuilder.getRequestCode()) {
@@ -156,13 +163,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String filePath = FileChooseUtil.getPathFromUri(this, data.getData());
                 Log.e(TAG, filePath + "  Authority=" + data.getData().getAuthority());
             }
-        }
-
-        if(requestCode==1001){
-            new File(cacheDirPath).mkdirs();
-            new File(cacheDirPathCompress).mkdirs();
-            new File(cacheDirPathImage).mkdirs();
-            new File(cacheDirPathVideos).mkdirs();
         }
 
 
