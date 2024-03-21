@@ -11,6 +11,7 @@ import com.xjl.emedia.activity.MediaPickerActivity;
 import com.xjl.emedia.adapter.MediaPickerAdapter;
 import com.xjl.emedia.bean.MediaPickerBean;
 import com.xjl.emedia.utils.IntentUtil;
+import com.xjl.emediademo.R;
 
 import java.util.List;
 

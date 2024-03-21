@@ -21,6 +21,7 @@ import com.xjl.emedia.impl.RecordPreOnClickListener;
 import com.xjl.emedia.utils.FileChooseUtil;
 import com.xjl.emedia.utils.IntentUtil;
 import com.xjl.emedia.utils.PicUtils;
+import com.xjl.emediademo.R;
 
 import java.io.File;
 import java.util.List;
@@ -58,51 +59,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         String filePath;
-        switch (view.getId()) {
-            case R.id.start_album:
-                new EPickerBuilder(this)
-                        .setPickerType(EPickerBuilder.PickerType.PHOTO_VIDEO)
-                        .setMaxChoseNum(9)
-                        .setFilterPhotoMaxSize(10)
-                        .setProgressDialogClass(ProgressDialog.class)
-                        .openCompress(true, cacheDirPathCompress)
-                        .overSizeVisible(true)
-                        .setOpenPreview(true)
-                        .setOpenSkipMemoryCache(true)
-                        .setOpenBottomMoreOperate(true)
-                        .setPreviewActivity(PreviewActivity.class)
-                        .setrowNum(5)
-                        .setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER)
-                        .startPicker();
-                break;
-            case R.id.take_photo:
-                filePath = IntentUtil.makePhoto(this, cacheDirPathImage);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && TextUtils.isEmpty(filePath)) {
-                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
-                            10001);
-                }
-                break;
-            case R.id.take_video:
-                filePath = IntentUtil.makeVideo(this, cacheDirPathVideos);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && TextUtils.isEmpty(filePath)) {
-                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
-                            10001);
-                }
-                break;
-            case R.id.take_video_custom:
-                new ERecordBuilder(MainActivity.this)
-                        .setRecordMinTime(3)
-                        .setLimitTime(20)
-                        .setQuality(ERecordBuilder.RecordQuality.ALL)
-                        .setShowLight(false)
-                        .setShowRatio(false)
-                        .setPreOnClickListener(RecordPreOnClickListener.class)
-                        .startRecord(cacheDirPathVideos);
-                break;
-            case R.id.take_file:
-                IntentUtil.openFileManager(this);
-                break;
+        int viewID=view.getId();
+        if(viewID==R.id.start_album){
+            new EPickerBuilder(this)
+                    .setPickerType(EPickerBuilder.PickerType.PHOTO_VIDEO)
+                    .setMaxChoseNum(9)
+                    .setFilterPhotoMaxSize(10)
+                    .setProgressDialogClass(ProgressDialog.class)
+                    .openCompress(true, cacheDirPathCompress)
+                    .overSizeVisible(true)
+                    .setOpenPreview(true)
+                    .setOpenSkipMemoryCache(true)
+                    .setOpenBottomMoreOperate(true)
+                    .setPreviewActivity(PreviewActivity.class)
+                    .setrowNum(5)
+                    .setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER)
+                    .startPicker();
+        }else if(viewID == R.id.take_photo){
+            filePath = IntentUtil.makePhoto(this, cacheDirPathImage);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && TextUtils.isEmpty(filePath)) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
+                        10001);
+            }
+        }else if(viewID==R.id.take_video ){
+            filePath = IntentUtil.makeVideo(this, cacheDirPathVideos);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && TextUtils.isEmpty(filePath)) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
+                        10001);
+            }
+        }else if(viewID==R.id.take_video_custom){
+            new ERecordBuilder(MainActivity.this)
+                    .setRecordMinTime(3)
+                    .setLimitTime(20)
+                    .setQuality(ERecordBuilder.RecordQuality.ALL)
+                    .setShowLight(false)
+                    .setShowRatio(false)
+                    .setPreOnClickListener(RecordPreOnClickListener.class)
+                    .startRecord(cacheDirPathVideos);
+        }else if(viewID==R.id.take_file){
+            IntentUtil.openFileManager(this);
         }
+
     }
 
     private void initView() {
