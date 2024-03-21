@@ -16,7 +16,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.xjl.emedia_demo.PreviewActivity"/>
+        <activity android:name="com.xjl.emedia_demo.PreviewActivity"
+            android:exported="true"/>
 
 
     </application>

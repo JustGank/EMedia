@@ -39,6 +39,7 @@ import com.xjl.emedia.adapter.PopPicFolderAdapter;
 import com.xjl.emedia.bean.MediaFileBean;
 import com.xjl.emedia.bean.MediaPickerBean;
 import com.xjl.emedia.builder.EPickerBuilder;
+import com.xjl.emedia.entry.MediaPickerEntry;
 import com.xjl.emedia.popwindow.PicFolderListPopwindow;
 import com.xjl.emedia.utils.FileUtil;
 import com.xjl.emedia.utils.IntentUtil;
@@ -153,11 +154,12 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
     //跨页面关闭广播接收器
     private FinshActivityReceiver finishActivityReceiver;
 
+    private MediaPickerEntry entry;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        int orientation=getIntent().getIntExtra("orientation", ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        Log.e(TAG,"orientation="+orientation);
+        int orientation = getIntent().getIntExtra("orientation", ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        Log.e(TAG, "orientation=" + orientation);
         setRequestedOrientation(orientation);
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_media_picker);
@@ -207,6 +209,10 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         openSkipMemoryCache = getIntent().getBooleanExtra("openSkipMemoryCache", false);
         openBottomMoreOperate = getIntent().getBooleanExtra("openBottomMoreOperate", false);
         rowNum = getIntent().getIntExtra("rowNum", 4);
+        entry = getIntent().getParcelableExtra("entry");
+        if (entry == null) {
+            entry = new MediaPickerEntry(this);
+        }
     }
 
     private void initView() {
@@ -217,6 +223,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         title_contianer.setBackgroundResource(subjectBackground);
         title_tv = (TextView) findViewById(R.id.title_tv);
         title_tv.setTextColor(getResources().getColor(subjectTextColor));
+        title_tv.setText(entry.photo_album);
         chosedNum = (TextView) findViewById(R.id.chosed_num);
         chosedNum.setOnClickListener(MediaPickerActivity.this);
         recyclerview = (RecyclerView) findViewById(R.id.recyclerview);
@@ -225,8 +232,10 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         more_container.setVisibility(openBottomMoreOperate ? View.VISIBLE : View.GONE);
         all_pic = (TextView) findViewById(R.id.all_pic);
         all_pic.setTextColor(getResources().getColor(subjectTextColor));
+        all_pic.setText(entry.all_pics);
         orginal_pic = (TextView) findViewById(R.id.orginal_pic);
         orginal_pic.setTextColor(getResources().getColor(subjectTextColor));
+        orginal_pic.setText(entry.original_pics);
         orginal_pic_select = (ImageView) findViewById(R.id.orginal_pic_select);
         orginal_pic_select.setOnClickListener(MediaPickerActivity.this);
         orginal_pic_select.setBackgroundResource(compressOpen ? R.mipmap.all_unselected : R.mipmap.all_selected);
@@ -368,17 +377,16 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
             return;
         }
 
-
         //先添加所有照片的第一个元素
         List<MediaFileBean> list = new ArrayList<>();
         MediaFileBean mediaFileBean = new MediaFileBean("");
-        mediaFileBean.folderName = getString(R.string.all_pics);
+        mediaFileBean.folderName = entry.all_pics;
         mediaFileBean.num = 0;
         mediaFileBean.coverFilePath = mediaPickerBeanList.get(0).mediaFilePath;
         list.add(mediaFileBean);
         list.addAll(mediaFolderMap.values());
 
-        popwindow = new PicFolderListPopwindow(this, list, R.color.divid_line_color);
+        popwindow = new PicFolderListPopwindow(this, list, R.color.divid_line_color,entry.ticket);
         popPicFolderAdapter = popwindow.getAdapter();
         popPicFolderAdapter.setOnItemClickListener(picFolderItemClickListener);
         popwindow.setWidth(screentWidth);
@@ -389,8 +397,8 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         @Override
         public void onClick(int position, View v, MediaFileBean mediaFileBean) {
             if (mediaFileBean.num == 0) {
-                title_tv.setText(R.string.photo_album);
-                all_pic.setText(R.string.all_pics);
+                title_tv.setText(entry.photo_album);
+                all_pic.setText(entry.all_pics);
                 adapter.setList(mediaPickerBeanList);
             } else {
                 title_tv.setText(mediaFileBean.folderName);
@@ -410,10 +418,10 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
         public void onSelectedClicked(int position, MediaPickerBean bean) {
 
             if ((bean.type == 1 && bean.getSize() > maxPhotoSize)) {
-                showToast(getString(R.string.photo_over_size));
+                showToast(entry.photo_over_size);
                 return;
             } else if (bean.type == 2 && bean.getSize() > maxVideoSize) {
-                showToast(getString(R.string.video_over_size));
+                showToast(entry.video_over_size);
                 return;
             }
 
@@ -425,7 +433,7 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
                     pickedList.add(bean);
                     adapter.notifyPickState(position);
                 } else {
-                    showToast(getString(R.string.over_maxinum));
+                    showToast(entry.over_maxinum);
                     return;
                 }
             }
@@ -435,11 +443,11 @@ public class MediaPickerActivity extends Activity implements View.OnClickListene
                 preview.setVisibility(View.GONE);
             } else {
                 chosedNum.setVisibility(View.VISIBLE);
-                chosedNum.setText(getString(R.string.send) + "(" + pickedList.size() + "/" + PICKED_MEDIA_MAX_SIZE + ")");
+                chosedNum.setText(entry.send + "(" + pickedList.size() + "/" + PICKED_MEDIA_MAX_SIZE + ")");
 
                 if (previewActivity != null) {
                     preview.setVisibility(View.VISIBLE);
-                    preview.setText(getString(R.string.preview) + "(" + pickedList.size() + ")");
+                    preview.setText(entry.preview + "(" + pickedList.size() + ")");
                 }
 
             }

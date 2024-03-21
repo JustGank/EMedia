@@ -1,14 +1,13 @@
 package com.xjl.emedia.adapter;
 
 import android.app.Activity;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -27,13 +26,16 @@ public class PopPicFolderAdapter extends RecyclerView.Adapter<PopPicFolderAdapte
 
     int divid_line_color;
 
+    String ticket;
+
     private RequestOptions requestOptions;
 
-    public PopPicFolderAdapter(List<MediaFileBean> list, Activity activity, int divid_line_color) {
+    public PopPicFolderAdapter(List<MediaFileBean> list, Activity activity, int divid_line_color,String ticket) {
         this.list = list;
         this.activity = activity;
         this.inflater = this.activity.getLayoutInflater();
         this.divid_line_color = divid_line_color;
+        this.ticket=ticket;
         this.requestOptions = new RequestOptions();
         this.requestOptions.centerCrop();
     }
@@ -55,7 +57,7 @@ public class PopPicFolderAdapter extends RecyclerView.Adapter<PopPicFolderAdapte
 
         holder.num.setVisibility(mediaFileBean.num == 0 ? View.GONE : View.VISIBLE);
 
-        holder.num.setText(mediaFileBean.num + activity.getString(R.string.ticket));
+        holder.num.setText(mediaFileBean.num + this.ticket);
 
         holder.divid_line.setBackgroundColor(activity.getResources().getColor(divid_line_color));
 

@@ -16,6 +16,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -33,13 +38,10 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import com.xjl.emedia.R;
 import com.xjl.emedia.activity.VideoRecordActivity;
 import com.xjl.emedia.builder.ERecordBuilder;
+import com.xjl.emedia.entry.VideoRecordEntry;
 import com.xjl.emedia.impl.PreOnClickListener;
 import com.xjl.emedia.widget.CameraPreview;
 
@@ -75,9 +77,9 @@ public class VideoRecordFragment extends Fragment {
     private int recordMinTime, limitTime;
     private ERecordBuilder.RecordQuality recordQuality;
     private String savePath;
+    private PreOnClickListener preOnClickListener = null;
 
-
-    private PreOnClickListener preOnClickListener=null;
+    private VideoRecordEntry entry = null;
 
     /**
      * 初始化控件 录制页面的控件
@@ -120,9 +122,9 @@ public class VideoRecordFragment extends Fragment {
         isShowLight = getActivity().getIntent().getBooleanExtra("isShowLight", true);
         isShowRatio = getActivity().getIntent().getBooleanExtra("isShowRatio", true);
 
-        Class preOnClickListenerClass=(Class) getActivity().getIntent().getSerializableExtra("preOnClickListener");
-        Log.e(TAG,"preOnClickListenerClass is null="+(preOnClickListenerClass==null));
-        if(preOnClickListenerClass!=null){
+        Class preOnClickListenerClass = (Class) getActivity().getIntent().getSerializableExtra("preOnClickListener");
+        Log.e(TAG, "preOnClickListenerClass is null=" + (preOnClickListenerClass == null));
+        if (preOnClickListenerClass != null) {
             try {
                 preOnClickListener = (PreOnClickListener) preOnClickListenerClass.getConstructor().newInstance();
             } catch (Exception e) {
@@ -130,16 +132,19 @@ public class VideoRecordFragment extends Fragment {
             }
         }
 
+        entry = getActivity().getIntent().getParcelableExtra("entry");
+        if (entry == null) {
+            entry = new VideoRecordEntry(getContext());
+        }
 
         if (TextUtils.isEmpty(savePath)) {
-            Toast.makeText(getActivity(), getResources().getString(R.string.save_path_null), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), entry.save_path_null, Toast.LENGTH_SHORT).show();
             getActivity().finish();
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (getActivity().checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
                     getActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
                     getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getActivity(), getResources().getString(R.string.please_gave_permission)
-                        , Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), entry.please_gave_permission, Toast.LENGTH_SHORT).show();
                 getActivity().finish();
             } else {
                 initView();
@@ -206,26 +211,29 @@ public class VideoRecordFragment extends Fragment {
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        int cameraID=cameraFront?findFrontFacingCamera():findBackFacingCamera();
-        if(mCamera!=null){
-            setCameraDisplayOrientation(getActivity(),cameraID,mCamera);
-        }
+        int cameraId = cameraFront ? findFrontFacingCamera() : findBackFacingCamera();
+        setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
     }
 
-
-    public static void setCameraDisplayOrientation(Activity activity,
-                                                   int cameraId, android.hardware.Camera camera) {
+    public static void setCameraDisplayOrientation(Activity activity, int cameraId, android.hardware.Camera camera) {
         android.hardware.Camera.CameraInfo info =
                 new android.hardware.Camera.CameraInfo();
         android.hardware.Camera.getCameraInfo(cameraId, info);
-        int rotation = activity.getWindowManager().getDefaultDisplay()
-                .getRotation();
+        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
         }
 
         int result;
@@ -235,7 +243,12 @@ public class VideoRecordFragment extends Fragment {
         } else {  // back-facing
             result = (info.orientation - degrees + 360) % 360;
         }
-        camera.setDisplayOrientation(result);
+        if(camera!=null){
+            camera.setDisplayOrientation(result);
+        }else{
+            Log.w(TAG,"setCameraDisplayOrientation failed, camera is null!");
+        }
+
     }
 
 
@@ -270,8 +283,7 @@ public class VideoRecordFragment extends Fragment {
         super.onResume();
         if (!hasCamera(getActivity().getApplicationContext())) {
             //这台设备没有发现摄像头
-            Toast.makeText(getActivity().getApplicationContext(), R.string.dont_have_camera_error
-                    , Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity().getApplicationContext(), entry.dont_have_camera_error, Toast.LENGTH_SHORT).show();
             getActivity().setResult(VideoRecordActivity.RESULT_CODE_FOR_RECORD_VIDEO_FAILED);
             releaseCamera();
             releaseMediaRecorder();
@@ -288,7 +300,7 @@ public class VideoRecordFragment extends Fragment {
                 switchCameraListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(getActivity(), R.string.dont_have_front_camera, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), entry.dont_have_front_camera, Toast.LENGTH_SHORT).show();
                     }
                 };
 
@@ -311,7 +323,7 @@ public class VideoRecordFragment extends Fragment {
                 reloadQualities(cameraId);
             } catch (Exception e) {
                 mCamera = null;
-                Toast.makeText(getActivity(), R.string.camera_occupancy, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), entry.camera_occupancy, Toast.LENGTH_SHORT).show();
                 getActivity().finish();
                 e.printStackTrace();
             }
@@ -506,9 +518,8 @@ public class VideoRecordFragment extends Fragment {
                 if (!preOnClickListener.preOnClick(v, getActivity())) {
                     return;
                 }
-            }else
-            {
-                Log.e(TAG,"switchCameraListener preOnClickListener is null ");
+            } else {
+                Log.e(TAG, "switchCameraListener preOnClickListener is null ");
             }
 
 
@@ -519,8 +530,7 @@ public class VideoRecordFragment extends Fragment {
                     chooseCamera();
                 } else {
                     //只有一个摄像头不允许切换
-                    Toast.makeText(getActivity(), R.string.only_have_one_camera
-                            , Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), entry.only_have_one_camera, Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -569,8 +579,7 @@ public class VideoRecordFragment extends Fragment {
         public void onClick(View v) {
             if (recording) {
                 if (countUp < recordMinTime) {
-                    Toast.makeText(getActivity(),
-                            getResources().getString(R.string.video_too_short), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), entry.video_too_short, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -581,7 +590,7 @@ public class VideoRecordFragment extends Fragment {
                 button_ChangeCamera.setVisibility(View.GONE);
                 //准备开始录制视频
                 if (!prepareMediaRecorder()) {
-                    Toast.makeText(getActivity(), getString(R.string.camera_init_fail), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), entry.camera_init_fail, Toast.LENGTH_SHORT).show();
                     getActivity().setResult(VideoRecordActivity.RESULT_CODE_FOR_RECORD_VIDEO_FAILED);
                     releaseCamera();
                     releaseMediaRecorder();
@@ -630,7 +639,7 @@ public class VideoRecordFragment extends Fragment {
         changeRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         releaseMediaRecorder();
         if (getActivity() != null) {
-            Toast.makeText(getActivity(), isInterrupt ? R.string.video_interrupt : R.string.video_captured, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), isInterrupt ? entry.video_interrupt : entry.video_captured, Toast.LENGTH_SHORT).show();
         }
 
         if (isInterrupt && getActivity() != null) {
@@ -791,7 +800,7 @@ public class VideoRecordFragment extends Fragment {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(getActivity(), R.string.changing_flashLight_mode,
+            Toast.makeText(getActivity(), entry.changing_flashLight_mode,
                     Toast.LENGTH_SHORT).show();
         }
     }

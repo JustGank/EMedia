@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import com.xjl.emedia.activity.VideoRecordActivity;
+import com.xjl.emedia.entry.VideoRecordEntry;
 import com.xjl.emedia.impl.PreOnClickListener;
 
 import java.io.Serializable;
@@ -35,7 +36,7 @@ public class ERecordBuilder implements Serializable {
         if (unitSeconds < 0) {
             this.limitTime = 0;
         } else {
-            this.limitTime = unitSeconds+1;
+            this.limitTime = unitSeconds + 1;
         }
         return this;
     }
@@ -110,18 +111,28 @@ public class ERecordBuilder implements Serializable {
     }
 
 
-    private Class<? extends PreOnClickListener> preOnClickListener=null;
+    private Class<? extends PreOnClickListener> preOnClickListener = null;
 
 
-    public ERecordBuilder setPreOnClickListener(Class<? extends PreOnClickListener> preOnClickListener){
-        this.preOnClickListener=preOnClickListener;
+    public ERecordBuilder setPreOnClickListener(Class<? extends PreOnClickListener> preOnClickListener) {
+        this.preOnClickListener = preOnClickListener;
         return this;
     }
 
-    public Class<? extends PreOnClickListener> getPreOnClickListener(){
+    public Class<? extends PreOnClickListener> getPreOnClickListener() {
         return preOnClickListener;
     }
 
+    private VideoRecordEntry entry = null;
+
+    public ERecordBuilder setVideoRecordEntry(VideoRecordEntry entry) {
+        this.entry = entry;
+        return this;
+    }
+
+    public VideoRecordEntry getVideoRecordEntry() {
+        return  this.entry;
+    }
 
 
     public void startRecord(String savePath) {
@@ -131,6 +142,10 @@ public class ERecordBuilder implements Serializable {
         if (limitTime != 0 && limitTime < recordMinTime) {
             limitTime = recordMinTime;
         }
+        activity.startActivityForResult(buildIntent(savePath), RequestCode);
+    }
+
+    public Intent buildIntent(String savePath){
         this.savePath = savePath;
         Intent intent = new Intent(activity, VideoRecordActivity.class);
         intent.putExtra("recordMinTime", this.recordMinTime);
@@ -139,9 +154,13 @@ public class ERecordBuilder implements Serializable {
         intent.putExtra("savePath", this.savePath);
         intent.putExtra("isShowLight", this.isShowLight);
         intent.putExtra("isShowRatio", this.isShowRatio);
-        intent.putExtra("preOnClickListener",this.preOnClickListener);
-        activity.startActivityForResult(intent, RequestCode);
+        intent.putExtra("preOnClickListener", this.preOnClickListener);
+        intent.putExtra("entry", this.entry);
+        return intent;
     }
+
+
+
 
     public String getSavePath() {
         return savePath;

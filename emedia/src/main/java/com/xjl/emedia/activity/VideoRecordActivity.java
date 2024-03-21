@@ -7,15 +7,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.xjl.emedia.R;
 import com.xjl.emedia.bean.BroadcastCMD;
@@ -26,7 +25,7 @@ import com.xjl.emedia.fragment.VideoRecordFragment;
  * Created by x33664 on 2019/2/13.
  */
 
-public class VideoRecordActivity extends AppCompatActivity {
+public class VideoRecordActivity extends FragmentActivity {
 
     private static final String TAG = VideoRecordActivity.class.getSimpleName();
 
@@ -83,8 +82,8 @@ public class VideoRecordActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
-    }
 
+    }
 
     @Override
     protected void onPause() {

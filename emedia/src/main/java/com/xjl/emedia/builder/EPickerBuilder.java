@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import com.xjl.emedia.R;
 import com.xjl.emedia.activity.MediaPickerActivity;
+import com.xjl.emedia.entry.MediaPickerEntry;
 
 import java.io.Serializable;
 
@@ -222,7 +223,7 @@ public class EPickerBuilder {
      */
     private int rowNum = 4;
 
-    public EPickerBuilder setrowNum(int rowNum) {
+    public EPickerBuilder setrRowNum(int rowNum) {
         this.rowNum = rowNum;
         return this;
     }
@@ -246,7 +247,27 @@ public class EPickerBuilder {
         return this.orientation;
     }
 
+    private MediaPickerEntry entry = null;
+
+    /**
+     * 方便多语言实现，增加词条对象，该对象封装了图片选择器涉及的所有的词条
+     */
+    public EPickerBuilder setMediaPickerEntry(MediaPickerEntry entry) {
+        this.entry = entry;
+        return this;
+    }
+
+    public MediaPickerEntry getMediaPickerEntry() {
+        return this.entry;
+    }
+
+
     public void startPicker() {
+        this.activity.startActivityForResult(buildIntent(), RequestCode);
+    }
+
+
+    public Intent buildIntent(){
         Intent intent = new Intent(activity, MediaPickerActivity.class);
         intent.putExtra("max_chose_num", max_chose_num);
         intent.putExtra("pickerType", pickerType);
@@ -267,7 +288,8 @@ public class EPickerBuilder {
         intent.putExtra("openBottomMoreOperate", openBottomMoreOperate);
         intent.putExtra("rowNum", rowNum);
         intent.putExtra("orientation", orientation);
-        this.activity.startActivityForResult(intent, RequestCode);
+        intent.putExtra("entry", entry);
+        return intent;
     }
 
 

@@ -1,12 +1,11 @@
 package com.xjl.emedia.popwindow;
 
 import android.app.Activity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.PopupWindow;
-
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.xjl.emedia.R;
 import com.xjl.emedia.adapter.PopPicFolderAdapter;
@@ -23,7 +22,7 @@ public class PicFolderListPopwindow extends PopupWindow {
     RecyclerView recyclerView;
 
 
-    public PicFolderListPopwindow(Activity activity, List<MediaFileBean> list, int dividLineColor) {
+    public PicFolderListPopwindow(Activity activity, List<MediaFileBean> list, int dividLineColor,String ticket) {
         super(activity);
 
         rootView=LayoutInflater.from(activity).inflate(R.layout.pop_pic_folder_list, null);
@@ -34,7 +33,7 @@ public class PicFolderListPopwindow extends PopupWindow {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(activity));
 
-        adapter=new PopPicFolderAdapter(list,activity,dividLineColor);
+        adapter=new PopPicFolderAdapter(list,activity,dividLineColor,ticket);
 
         recyclerView.setAdapter(adapter);
 

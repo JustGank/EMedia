@@ -1,11 +1,17 @@
 <resources>
     <string name="app_name">emedia</string>
+    <!-- 相册词条 -->
     <string name="photo_album">相册</string>
     <string name="photo_over_size">您选择的图片过大</string>
     <string name="video_over_size">您选择的视频过大</string>
     <string name="over_maxinum">已达到最大选择长度</string>
     <string name="send">发送</string>
+    <string name="all_pics">所有照片</string>
+    <string name="original_pics">原图</string>
+    <string name="preview">预览</string>
+    <string name="ticket">张</string>
 
+    <!-- 录像词条 -->
     <string name="dont_have_camera_error">未发现摄像头!</string>
     <string name="dont_have_front_camera">未发现前置摄像头</string>
     <string name="fail_when_camera_try_autofocus">自动对焦失败:%1$s</string>
@@ -20,9 +26,5 @@
     <string name="please_gave_permission">请给与相应权限后重新打开</string>
     <string name="camera_occupancy">摄像头占用中</string>
     
-    <string name="all_pics">所有照片</string>
-    <string name="original_pics">原图</string>
-    <string name="preview">预览</string>
-    <string name="ticket">张</string>
-    
+
 </resources>

@@ -1,5 +1,6 @@
 package com.xjl.emedia_demo;
 
+
 import android.os.Bundle;
 import android.util.Log;
 
@@ -43,11 +44,9 @@ public class PreviewActivity extends AppCompatActivity {
         recyclerView=(RecyclerView)findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new GridLayoutManager(PreviewActivity.this,4));
 
-
         adapter=new MediaPickerAdapter(PreviewActivity.this,mediaList);
 
         recyclerView.setAdapter(adapter);
-
 
     }
 }

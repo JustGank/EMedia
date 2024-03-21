@@ -2,17 +2,17 @@ package com.xjl.emedia.fragment;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -52,16 +52,9 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
     public PreviewFragment() {
     }
 
-     private RequestOptions getRequestOptions(){
-         requestOptions = new RequestOptions();
-         requestOptions.skipMemoryCache(false);
-         requestOptions.centerCrop();
-         return  requestOptions;
-     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.e(TAG, "onCreateView ");
         rootView = inflater.inflate(R.layout.fragment_preview, null);
         filePath = getArguments().getString("folderPath");
         Log.e(TAG, "folderPath=" + filePath);
@@ -71,7 +64,6 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.e(TAG, "onViewCreated ");
         playerBackground = (ImageView) rootView.findViewById(R.id.player_background);
         player = (ImageView) rootView.findViewById(R.id.player);
         player.setOnClickListener(PreviewFragment.this);
@@ -81,12 +73,15 @@ public class PreviewFragment extends Fragment implements View.OnClickListener {
         select.setOnClickListener(PreviewFragment.this);
         playerLayout = (RelativeLayout) rootView.findViewById(R.id.player_layout);
 
+        requestOptions = new RequestOptions();
+        requestOptions.skipMemoryCache(false);
+        requestOptions.centerCrop();
+
         Glide.with(getActivity()).load("file://" + filePath)
-                .apply(getRequestOptions())
+                .apply(requestOptions)
                 .into(playerBackground);
 
     }
-
 
     @Override
     public void onClick(View view) {

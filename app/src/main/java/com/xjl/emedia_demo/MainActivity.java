@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private final String cacheDirPathVideos = cacheDirPath + File.separator + "Videos";
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,13 +53,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         initView();
+
     }
 
     @Override
     public void onClick(View view) {
         String filePath;
         int viewID=view.getId();
-        if(viewID==R.id.start_album){
+
+        if (view.getId() == R.id.start_album) {
             new EPickerBuilder(this)
                     .setPickerType(EPickerBuilder.PickerType.PHOTO_VIDEO)
                     .setMaxChoseNum(9)
@@ -71,35 +72,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .setOpenPreview(true)
                     .setOpenSkipMemoryCache(true)
                     .setOpenBottomMoreOperate(true)
-                    .setPreviewActivity(PreviewActivity.class)
-                    .setrowNum(5)
-                    .setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_USER)
+                    .setPreviewActivity(null)
+                    .setrRowNum(5)
+                    .setScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_USER)
                     .startPicker();
-        }else if(viewID == R.id.take_photo){
+        } else if (view.getId() == R.id.take_photo) {
             filePath = IntentUtil.makePhoto(this, cacheDirPathImage);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && TextUtils.isEmpty(filePath)) {
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
                         10001);
             }
-        }else if(viewID==R.id.take_video ){
+        } else if (view.getId() == R.id.take_video) {
             filePath = IntentUtil.makeVideo(this, cacheDirPathVideos);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && TextUtils.isEmpty(filePath)) {
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
                         10001);
             }
-        }else if(viewID==R.id.take_video_custom){
+        } else if (view.getId() == R.id.take_video_custom) {
             new ERecordBuilder(MainActivity.this)
                     .setRecordMinTime(3)
-                    .setLimitTime(20)
+                    .setLimitTime(0)
                     .setQuality(ERecordBuilder.RecordQuality.ALL)
-                    .setShowLight(false)
-                    .setShowRatio(false)
+                    .setShowLight(true)
+                    .setShowRatio(true)
                     .setPreOnClickListener(RecordPreOnClickListener.class)
                     .startRecord(cacheDirPathVideos);
-        }else if(viewID==R.id.take_file){
+        } else if (view.getId() == R.id.take_file) {
             IntentUtil.openFileManager(this);
         }
-
     }
 
     private void initView() {
@@ -114,19 +114,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.e(TAG, "  requestCode=" + requestCode + "    resultCode=" + resultCode + " data is null=" + (data == null));
-
-
         if (resultCode == RESULT_CANCELED) {
             return;
         }
 
-        if (requestCode == 1001) {
+        if(requestCode==1001){
             new File(cacheDirPath).mkdirs();
             new File(cacheDirPathCompress).mkdirs();
             new File(cacheDirPathImage).mkdirs();
             new File(cacheDirPathVideos).mkdirs();
         }
-
 
         File temp;
         if (requestCode == EPickerBuilder.getRequestCode()) {
@@ -138,10 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             temp = IntentUtil.parserTakedPhoto(this, true);
             if (temp != null) {
                 Log.e(TAG, temp.exists() ? "Image take success,file path:" + temp.getAbsolutePath() : "Image file not exist!");
-
                 PicUtils.readPictureDegree(temp.getAbsolutePath());
-
-
             }
 
         } else if (requestCode == IntentUtil.TAKE_VIDEO_REQUEST_CODE) {
@@ -161,9 +155,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e(TAG, filePath + "  Authority=" + data.getData().getAuthority());
             }
         }
-
-
     }
-
 
 }
