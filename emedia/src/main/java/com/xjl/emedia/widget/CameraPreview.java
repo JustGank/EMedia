@@ -1,7 +1,6 @@
 package com.xjl.emedia.widget;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.util.Log;
@@ -65,14 +64,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.stopPreview();
         } catch (Exception e) {
             // ignore: tried to stop a non-existent preview
-        }
-        // set preview size and make any resize, rotate or
-        // reformatting changes here
-        Log.e(TAG, "orientation=" + getResources().getConfiguration().orientation);
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            if (camera != null) {
-                camera.setDisplayOrientation(90);
-            }
         }
 
         // start preview with new settings

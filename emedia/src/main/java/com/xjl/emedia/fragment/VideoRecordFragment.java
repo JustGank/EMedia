@@ -9,6 +9,9 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -16,14 +19,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -37,6 +36,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.xjl.emedia.R;
 import com.xjl.emedia.activity.VideoRecordActivity;
@@ -99,10 +102,7 @@ public class VideoRecordFragment extends Fragment {
     public VideoRecordFragment() {
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
+
 
     @Nullable
     @Override
@@ -215,41 +215,63 @@ public class VideoRecordFragment extends Fragment {
         setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
     }
 
-    public static void setCameraDisplayOrientation(Activity activity, int cameraId, android.hardware.Camera camera) {
-        android.hardware.Camera.CameraInfo info =
-                new android.hardware.Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(cameraId, info);
-        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-        int degrees = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                degrees = 0;
-                break;
-            case Surface.ROTATION_90:
-                degrees = 90;
-                break;
-            case Surface.ROTATION_180:
-                degrees = 180;
-                break;
-            case Surface.ROTATION_270:
-                degrees = 270;
-                break;
+    public void setCameraDisplayOrientation(Activity activity, int cameraId, android.hardware.Camera camera) {
+        CameraManager cameraManager= (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+
+        try {
+            CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(String.valueOf(cameraId));
+            int sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
+            // 获取设备当前的显示旋转角度
+            int displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+
+            // 计算最终需要旋转的角度以匹配预览方向
+            int totalRotation = sensorToDeviceRotation(displayRotation, sensorOrientation);
+
+            Log.i(TAG,"setCameraDisplayOrientation totalRotation : "+totalRotation);
+
+            if(camera!=null){
+                camera.setDisplayOrientation(totalRotation);
+            }else{
+                Log.w(TAG,"setCameraDisplayOrientation failed, camera is null!");
+            }
+
+        }catch (CameraAccessException e) {
+            // 错误处理
+            Log.i(TAG,"setCameraDisplayOrientation message : "+e.getMessage());
         }
 
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
-        }
-        if(camera!=null){
-            camera.setDisplayOrientation(result);
-        }else{
-            Log.w(TAG,"setCameraDisplayOrientation failed, camera is null!");
-        }
 
     }
+
+
+    // 方向映射表（假设ORIENTATIONS是一个全局变量）
+    private static SparseIntArray ORIENTATIONS = new SparseIntArray();
+    static {
+        ORIENTATIONS.append(Surface.ROTATION_0, 90);
+        ORIENTATIONS.append(Surface.ROTATION_90, 0);
+        ORIENTATIONS.append(Surface.ROTATION_180, 270);
+        ORIENTATIONS.append(Surface.ROTATION_270, 180);
+    }
+    // 计算旋转角度的方法
+    private int sensorToDeviceRotation(int displayRotation, int sensorOrientation) {
+        // 根据设备当前的显示旋转和传感器方向计算所需旋转角度
+        Log.i(TAG,"sensorToDeviceRotation displayRotation : "+displayRotation+", sensorOrientation : "+sensorOrientation);
+
+        switch (displayRotation) {
+            case Surface.ROTATION_0:
+                return sensorOrientation;
+            case Surface.ROTATION_90:
+                return (sensorOrientation + 90) % 360;
+            case Surface.ROTATION_180:
+                return (sensorOrientation + 180) % 360;
+            case Surface.ROTATION_270:
+                return (sensorOrientation + 270) % 360;
+            default:
+                return sensorOrientation;
+        }
+    }
+
 
 
     private void focusOnTouch(float x, float y) {
@@ -319,7 +341,9 @@ public class VideoRecordFragment extends Fragment {
             }
             try {
                 mCamera = Camera.open(cameraId);
+                setCameraDisplayOrientation(getActivity(), cameraId,mCamera);
                 mPreview.refreshCamera(mCamera);
+
                 reloadQualities(cameraId);
             } catch (Exception e) {
                 mCamera = null;
@@ -327,9 +351,7 @@ public class VideoRecordFragment extends Fragment {
                 getActivity().finish();
                 e.printStackTrace();
             }
-
         }
-
     }
 
     //检查设备是否有摄像头
@@ -478,7 +500,7 @@ public class VideoRecordFragment extends Fragment {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
                         && listOfQualities.getVisibility() == View.GONE) {
                     listOfQualities.setVisibility(View.VISIBLE);
-                    listOfQualities.animate().setDuration(200).alpha(95)
+                    listOfQualities.animate().setDuration(200).alpha(0.95f)
                             .withEndAction(new Runnable() {
                                 @Override
                                 public void run() {
