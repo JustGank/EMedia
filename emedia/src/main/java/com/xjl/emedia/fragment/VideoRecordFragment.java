@@ -103,7 +103,6 @@ public class VideoRecordFragment extends Fragment {
     }
 
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -215,8 +214,10 @@ public class VideoRecordFragment extends Fragment {
         setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
     }
 
+    private int currentTotalRotation = 0;
+
     public void setCameraDisplayOrientation(Activity activity, int cameraId, android.hardware.Camera camera) {
-        CameraManager cameraManager= (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+        CameraManager cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
 
         try {
             CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(String.valueOf(cameraId));
@@ -226,37 +227,36 @@ public class VideoRecordFragment extends Fragment {
             int displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation();
 
             // 计算最终需要旋转的角度以匹配预览方向
-            int totalRotation = sensorToDeviceRotation(displayRotation, sensorOrientation);
+            currentTotalRotation = sensorToDeviceRotation(displayRotation, sensorOrientation);
 
-            Log.i(TAG,"setCameraDisplayOrientation totalRotation : "+totalRotation);
+            Log.i(TAG, "setCameraDisplayOrientation totalRotation : " + currentTotalRotation);
 
-            if(camera!=null){
-                camera.setDisplayOrientation(totalRotation);
-            }else{
-                Log.w(TAG,"setCameraDisplayOrientation failed, camera is null!");
+            if (camera != null) {
+                camera.setDisplayOrientation(currentTotalRotation);
+            } else {
+                Log.w(TAG, "setCameraDisplayOrientation failed, camera is null!");
             }
 
-        }catch (CameraAccessException e) {
+        } catch (CameraAccessException e) {
             // 错误处理
-            Log.i(TAG,"setCameraDisplayOrientation message : "+e.getMessage());
+            Log.i(TAG, "setCameraDisplayOrientation message : " + e.getMessage());
         }
-
-
     }
-
 
     // 方向映射表（假设ORIENTATIONS是一个全局变量）
     private static SparseIntArray ORIENTATIONS = new SparseIntArray();
+
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
         ORIENTATIONS.append(Surface.ROTATION_90, 0);
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
+
     // 计算旋转角度的方法
     private int sensorToDeviceRotation(int displayRotation, int sensorOrientation) {
         // 根据设备当前的显示旋转和传感器方向计算所需旋转角度
-        Log.i(TAG,"sensorToDeviceRotation displayRotation : "+displayRotation+", sensorOrientation : "+sensorOrientation);
+        Log.i(TAG, "sensorToDeviceRotation displayRotation : " + displayRotation + ", sensorOrientation : " + sensorOrientation);
 
         switch (displayRotation) {
             case Surface.ROTATION_0:
@@ -271,7 +271,6 @@ public class VideoRecordFragment extends Fragment {
                 return sensorOrientation;
         }
     }
-
 
 
     private void focusOnTouch(float x, float y) {
@@ -341,7 +340,7 @@ public class VideoRecordFragment extends Fragment {
             }
             try {
                 mCamera = Camera.open(cameraId);
-                setCameraDisplayOrientation(getActivity(), cameraId,mCamera);
+                setCameraDisplayOrientation(getActivity(), cameraId, mCamera);
                 mPreview.refreshCamera(mCamera);
 
                 reloadQualities(cameraId);
@@ -720,14 +719,8 @@ public class VideoRecordFragment extends Fragment {
         mediaRecorder.setCamera(mCamera);
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            if (cameraFront) {
-                mediaRecorder.setOrientationHint(270);
-            } else {
-                mediaRecorder.setOrientationHint(90);
-            }
-        }
-
+        Log.i(TAG,"prepareMediaRecorder currentTotalRotation : "+currentTotalRotation);
+        mediaRecorder.setOrientationHint(currentTotalRotation);
         mediaRecorder.setProfile(CamcorderProfile.get(quality));
 
         filePath = savePath + File.separator + System.currentTimeMillis() + ".mp4";
