@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    namespace "com.xjl.emediademo"
-    compileSdkVersion 33
+    namespace "com.xjl.emedia.demo"
+    compileSdkVersion 34
 
     defaultConfig {
-        applicationId "com.xjl.emediademo"
+        applicationId "com.xjl.emedia.demo"
         minSdkVersion 23
-        targetSdkVersion 33
+        targetSdkVersion 34
 
         versionCode 1
         versionName "1.0"
@@ -19,10 +20,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    buildFeatures {
+        dataBinding true
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':emedia')
-
 }

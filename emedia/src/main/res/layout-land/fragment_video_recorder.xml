@@ -114,8 +114,12 @@
                 android:adjustViewBounds="true"
                 android:maxHeight="60dp"
                 android:scaleType="fitCenter"
-                android:src="@mipmap/ic_flash_off_white" />
+                android:src="@mipmap/emedia_flash_close" />
         </LinearLayout>
-    </LinearLayout>
 
+    </LinearLayout>
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </RelativeLayout>

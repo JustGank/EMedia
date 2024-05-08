@@ -6,8 +6,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name="com.xjl.emedia_demo.MainActivity"
+        android:theme="@style/AppTheme"
+        android:name="com.xjl.emedia.demo.AppApplicaiton"
+
+        >
+        <activity android:name="com.xjl.emedia.demo.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -16,7 +19,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.xjl.emedia_demo.PreviewActivity"
+        <activity android:name="com.xjl.emedia.demo.PreviewActivity"
             android:exported="true"/>
 
 
