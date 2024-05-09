@@ -1,13 +1,13 @@
 package com.xjl.emedia.activity
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.xjl.emedia.R
 import com.xjl.emedia.adapter.MediaPickerAdapter
 import com.xjl.emedia.adapter.PopPicFolderAdapter
+import com.xjl.emedia.bean.ImageCompressOption
 import com.xjl.emedia.bean.MediaForderBean
 import com.xjl.emedia.bean.MediaPickerBean
 import com.xjl.emedia.bean.MediaPickerRequestBean
@@ -39,6 +40,8 @@ import com.xjl.emedia.utils.IntentUtil.openLocalImage
 import com.xjl.emedia.utils.IntentUtil.openLocalVideo
 import com.xjl.emedia.utils.PicUtils
 import com.xjl.emedia.utils.ScreenUtil
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Collections
@@ -115,8 +118,8 @@ class MediaPickerActivity : AppCompatActivity() {
             intent.getParcelableExtra(MediaPickerRequestBean::class.java.simpleName)!!
         }
         mediaPickerRequestBean.apply {
-            waitingDialog = dialog_class.getConstructor(Context::class.java)
-                .newInstance(this@MediaPickerActivity)
+            waitingDialog = compressOption?.dialog_class?.getConstructor(Context::class.java)
+                ?.newInstance(this@MediaPickerActivity)
             this@MediaPickerActivity.entry =
                 mediaPickerEntry ?: MediaPickerEntry(this@MediaPickerActivity)
 
@@ -152,10 +155,13 @@ class MediaPickerActivity : AppCompatActivity() {
             titleTv.text = entry.photo_album
             chosedNum.setOnClickListener {
                 if (pickedList.size > 0) {
-                    if (mediaPickerRequestBean.openCompress) {
-                        asyncTask.execute()
-                    } else {
+                    if (mediaPickerRequestBean.compressOption == null ||
+                        mediaPickerRequestBean.compressOption?.openCompress == false ||
+                        mediaPickerRequestBean.compressOption?.valid() == false
+                    ) {
                         postResult()
+                    } else {
+                        compressImage(mediaPickerRequestBean.compressOption!!)
                     }
                 }
             }
@@ -164,17 +170,41 @@ class MediaPickerActivity : AppCompatActivity() {
                 if (mediaPickerRequestBean.openBottomMoreOperate) View.VISIBLE else View.GONE
             allPic.setTextColor(getColor(mediaPickerRequestBean.subjectTextColor))
             allPic.text = entry.all_pics
-            orginalPic.setTextColor(getColor(mediaPickerRequestBean.subjectTextColor))
-            orginalPic.text = entry.original_pics
-            orginalPicSelect.setOnClickListener {
-                mediaPickerRequestBean.openCompress = !mediaPickerRequestBean.openCompress
-                orginalPicSelect.setBackgroundResource(if (mediaPickerRequestBean.openCompress) R.mipmap.all_unselected else R.mipmap.all_selected)
+
+            if (mediaPickerRequestBean.compressOption == null ||
+                mediaPickerRequestBean.compressOption?.openCompress == false ||
+                mediaPickerRequestBean.compressOption?.valid() == false
+            ) {
+                orginalPic.visibility=View.GONE
+                orginalPicSelect.visibility=View.GONE
+            }else{
+                orginalPic.visibility=View.VISIBLE
+                orginalPic.setTextColor(getColor(mediaPickerRequestBean.subjectTextColor))
+                orginalPic.text = entry.original_pics
+
+                orginalPicSelect.visibility=View.VISIBLE
+                orginalPicSelect.setOnClickListener {
+                    mediaPickerRequestBean.compressOption?.let { it ->
+                        it.openCompress = !it.openCompress
+                        orginalPicSelect.setBackgroundResource(if (it.openCompress) R.mipmap.all_unselected else R.mipmap.all_selected)
+                    }
+                }
+
+                orginalPicSelect.setBackgroundResource(
+                    if (mediaPickerRequestBean.compressOption?.openCompress == true)
+                        R.mipmap.all_unselected else R.mipmap.all_selected
+                )
+
+                orginalPic.setOnClickListener {
+                    mediaPickerRequestBean.compressOption?.let { it ->
+                        it.openCompress = !it.openCompress
+                        orginalPicSelect.setBackgroundResource(if (it.openCompress) R.mipmap.all_unselected else R.mipmap.all_selected)
+                    }
+                }
             }
-            orginalPicSelect.setBackgroundResource(if (mediaPickerRequestBean.openCompress) R.mipmap.all_unselected else R.mipmap.all_selected)
-            orginalPic.setOnClickListener {
-                mediaPickerRequestBean.openCompress = !mediaPickerRequestBean.openCompress
-                orginalPicSelect.setBackgroundResource(if (mediaPickerRequestBean.openCompress) R.mipmap.all_unselected else R.mipmap.all_selected)
-            }
+
+
+
             preview.visibility =
                 if (mediaPickerRequestBean.previewActivity == null) View.GONE else View.VISIBLE
             preview.setOnClickListener { postPickedListToPreviewActivity() }
@@ -225,7 +255,11 @@ class MediaPickerActivity : AppCompatActivity() {
                 val deniedPermissions = permissions.filterNot { it.value }
                 Logger.i("$TAG getMediaFiles deniedPermissions:$deniedPermissions")
                 if (deniedPermissions.isNotEmpty()) {
-                    permissionLauncher.launch(EMediaPermissionUtil.getPickerNotGrantedPermissions(this@MediaPickerActivity))
+                    permissionLauncher.launch(
+                        EMediaPermissionUtil.getPickerNotGrantedPermissions(
+                            this@MediaPickerActivity
+                        )
+                    )
                 } else {
                     mediaPickerBeanList.clear()
                     pickedList.clear()
@@ -465,7 +499,7 @@ class MediaPickerActivity : AppCompatActivity() {
         if (mediaPickerRequestBean.previewActivity != null) {
             val intent = Intent(this@MediaPickerActivity, mediaPickerRequestBean.previewActivity)
             intent.putExtra(RESULT_LIST, pickedList)
-            intent.putExtra(COMPRESS_OPEN, mediaPickerRequestBean.openCompress)
+            intent.putExtra(COMPRESS_OPEN, mediaPickerRequestBean.compressOption?.openCompress)
             startActivity(intent)
         }
     }
@@ -476,45 +510,39 @@ class MediaPickerActivity : AppCompatActivity() {
             tempList.add(mediaPickerBean)
             val intent = Intent(this@MediaPickerActivity, mediaPickerRequestBean.previewActivity)
             intent.putExtra(RESULT_LIST, tempList)
-            intent.putExtra(COMPRESS_OPEN, mediaPickerRequestBean.openCompress)
+            intent.putExtra(COMPRESS_OPEN, mediaPickerRequestBean.compressOption?.openCompress)
             startActivity(intent)
         }
     }
 
-    var asyncTask: AsyncTask<*, *, *> = object : AsyncTask<Any?, Any?, Any?>() {
-        override fun onPreExecute() {
-            super.onPreExecute()
-            if (null != waitingDialog && waitingDialog is Dialog) {
-                (waitingDialog as Dialog).show()
-            }
+    fun compressImage(compressOption: ImageCompressOption) {
+        if (null != waitingDialog && waitingDialog is AlertDialog) {
+            (waitingDialog as Dialog).show()
         }
-
-        override fun doInBackground(objects: Array<Any?>): Any? {
+        GlobalScope.launch {
             for (i in pickedList.indices) {
                 if (pickedList[i].type == 1) {
                     val tempOutPath =
-                        mediaPickerRequestBean.outputPath + "/" + System.currentTimeMillis() + ".jpg"
+                        compressOption.outputPath + "/" + System.currentTimeMillis() + ".jpg"
                     PicUtils.isSaveCompressPicture(
                         pickedList[i].mediaFilePath,
                         tempOutPath,
-                        mediaPickerRequestBean.compressWidth,
-                        mediaPickerRequestBean.compressHeight
+                        compressOption.compressWidth,
+                        compressOption.compressHeight
                     )
                     pickedList[i].mediaFilePath = tempOutPath
-                    pickedList[i].size = File(mediaPickerRequestBean.outputPath).length()
+                    pickedList[i].size = File(compressOption.outputPath).length()
                     Logger.i("$TAG compressed file length=" + pickedList[i].size)
                 }
             }
-            return null
+            runOnUiThread {
+                if (null != waitingDialog && waitingDialog is AlertDialog) {
+                    (waitingDialog as Dialog).dismiss()
+                }
+                postResult()
+            }
         }
 
-        override fun onPostExecute(o: Any?) {
-            super.onPostExecute(o)
-            if (null != waitingDialog && waitingDialog is Dialog) {
-                (waitingDialog as Dialog).dismiss()
-            }
-            postResult()
-        }
     }
 
     private fun postResult() {

@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.xjl.emedia.bean.Constants
+import com.xjl.emedia.bean.ImageCompressOption
 import com.xjl.emedia.bean.MediaPickerRequestBean
 import com.xjl.emedia.bean.MediaRecordRequestBean
 import com.xjl.emedia.bean.PickerType
@@ -105,6 +106,12 @@ class MainActivity : AppCompatActivity() {
             openSkipMemoryCache = true
             rowNum = 5
             screenOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
+            this@MainActivity.externalCacheDir?.let { dirPath ->
+                compressOption =
+                    ImageCompressOption(dirPath.absolutePath + File.separator + "CompressImages")
+            }
+
+
         })
     }
 

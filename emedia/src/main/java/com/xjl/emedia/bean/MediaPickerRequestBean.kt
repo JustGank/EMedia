@@ -1,7 +1,6 @@
 package com.xjl.emedia.bean
 
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.pm.ActivityInfo
 import android.os.Parcel
 import android.os.Parcelable
@@ -14,11 +13,7 @@ class MediaPickerRequestBean() : Parcelable {
     var subjectBackground = R.color.subject_background
     var subjectTextColor = R.color.subject_text_color
     var backImgRes = 0
-    var openCompress = false
-    var outputPath = ""
-    var dialog_class: Class<*> = ProgressDialog::class.java
-    var compressWidth = 720
-    var compressHeight = 1080
+    var compressOption: ImageCompressOption? = null
     var maxPhotoSize = (4 * 1024 * 1024).toLong()
     var maxVideoSize = (30 * 1024 * 1024).toLong()
     var overSizeVisible = true
@@ -36,10 +31,7 @@ class MediaPickerRequestBean() : Parcelable {
         subjectBackground = parcel.readInt()
         subjectTextColor = parcel.readInt()
         backImgRes = parcel.readInt()
-        openCompress = parcel.readByte() != 0.toByte()
-        outputPath = parcel.readString()?:""
-        compressWidth = parcel.readInt()
-        compressHeight = parcel.readInt()
+        compressOption=parcel.readParcelable(MediaPickerEntry::class.java.classLoader)
         maxPhotoSize = parcel.readLong()
         maxVideoSize = parcel.readLong()
         overSizeVisible = parcel.readByte() != 0.toByte()
@@ -58,10 +50,7 @@ class MediaPickerRequestBean() : Parcelable {
         parcel.writeInt(subjectBackground)
         parcel.writeInt(subjectTextColor)
         parcel.writeInt(backImgRes)
-        parcel.writeByte(if (openCompress) 1 else 0)
-        parcel.writeString(outputPath)
-        parcel.writeInt(compressWidth)
-        parcel.writeInt(compressHeight)
+        parcel.writeParcelable(compressOption,flags)
         parcel.writeLong(maxPhotoSize)
         parcel.writeLong(maxVideoSize)
         parcel.writeByte(if (overSizeVisible) 1 else 0)
