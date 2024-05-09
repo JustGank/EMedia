@@ -1,13 +1,11 @@
 package com.xjl.emedia.activity
 
-import android.Manifest
 import android.app.Activity
 import android.app.Dialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.AsyncTask
 import android.os.Build
@@ -17,9 +15,9 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.xjl.emedia.R
@@ -33,6 +31,7 @@ import com.xjl.emedia.databinding.ActivityMediaPickerBinding
 import com.xjl.emedia.entry.MediaPickerEntry
 import com.xjl.emedia.logger.Logger
 import com.xjl.emedia.popwindow.PicFolderListPopwindow
+import com.xjl.emedia.utils.EMediaPermissionUtil
 import com.xjl.emedia.utils.FileUtil.getFileFolderPath
 import com.xjl.emedia.utils.IntentUtil.isImage
 import com.xjl.emedia.utils.IntentUtil.isVideo
@@ -218,60 +217,22 @@ class MediaPickerActivity : AppCompatActivity() {
         }
     }
 
+
+    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
     private fun getMediaFiles() {
-        mediaPickerBeanList.clear()
-        pickedList.clear()
-
-        val permissions: MutableList<String> = mutableListOf()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    application,
-                    Manifest.permission.READ_MEDIA_IMAGES
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
-            }
-            if (ContextCompat.checkSelfPermission(
-                    application,
-                    Manifest.permission.READ_MEDIA_VIDEO
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
-            }
-
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                if (ContextCompat.checkSelfPermission(
-                        application,
-                        Manifest.permission.READ_MEDIA_VIDEO
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+        permissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                val deniedPermissions = permissions.filterNot { it.value }
+                Logger.i("$TAG getMediaFiles deniedPermissions:$deniedPermissions")
+                if (deniedPermissions.isNotEmpty()) {
+                    permissionLauncher.launch(EMediaPermissionUtil.getPickerNotGrantedPermissions(this@MediaPickerActivity))
+                } else {
+                    mediaPickerBeanList.clear()
+                    pickedList.clear()
+                    startGetMediaThread()
                 }
             }
-
-        } else {
-            if (ContextCompat.checkSelfPermission(
-                    application,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-            }
-
-        }
-
-        Logger.i("$TAG getMediaFiles no granted permissions :${permissions.toString()}")
-
-        if (permissions.isEmpty()) {
-            startGetMediaThread()
-        } else {
-            ActivityCompat.requestPermissions(
-                this@MediaPickerActivity, permissions.toTypedArray(),
-                CODE_FOR_WRITE_PERMISSION
-            )
-        }
+        permissionLauncher.launch(EMediaPermissionUtil.getPickerNotGrantedPermissions(this@MediaPickerActivity))
     }
 
     private fun registReveiver() {
@@ -443,7 +404,7 @@ class MediaPickerActivity : AppCompatActivity() {
         }
     }
     var medidClickListener = object : MediaPickerAdapter.OnItemClickListener {
-        override fun onSelectedClicked(position: Int, bean: MediaPickerBean) :Boolean{
+        override fun onSelectedClicked(position: Int, bean: MediaPickerBean): Boolean {
             if (bean.type == 1 && bean.size > mediaPickerRequestBean.maxPhotoSize) {
                 showToast(entry.photo_over_size)
                 return false

@@ -1,11 +1,12 @@
 package com.xjl.emedia.demo
 
-import android.Manifest
 import android.content.pm.ActivityInfo
-import android.os.Build
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.xjl.emedia.bean.Constants
 import com.xjl.emedia.bean.MediaPickerRequestBean
@@ -19,6 +20,7 @@ import com.xjl.emedia.contract.TakeVideoContract
 import com.xjl.emedia.demo.databinding.ActivityMainBinding
 import com.xjl.emedia.impl.RecordPreOnClickListener
 import com.xjl.emedia.logger.Logger
+import com.xjl.emedia.utils.EMediaPermissionUtil
 import com.xjl.emedia.utils.PicUtils.readPictureDegree
 import java.io.File
 
@@ -31,33 +33,29 @@ class MainActivity : AppCompatActivity() {
     private var videoLauncher: ActivityResultLauncher<MediaRecordRequestBean>? = null
     private var fileLauncher: ActivityResultLauncher<String?>? = null
 
+    lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
+
     lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        val permissions: MutableList<String> = mutableListOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
-        )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
-            permissions.add(Manifest.permission.READ_MEDIA_VIDEO)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                permissions.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
+        permissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                val deniedPermissions = permissions.filterNot { it.value }
+                Logger.i("$TAG onCreate deniedPermissions:$deniedPermissions")
+                if (deniedPermissions.isNotEmpty()) {
+                    permissionLauncher.launch(EMediaPermissionUtil.getAllNotGrantedPermissions(this@MainActivity))
+                }
             }
-        } else {
-            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
-
-        requestPermissions(permissions.toTypedArray(), 1001)
+        permissionLauncher.launch(EMediaPermissionUtil.getAllNotGrantedPermissions(this@MainActivity))
 
         photoLauncher = registerForActivityResult(TakePhotoContract()) {
-            val temp = File(it)
-            if (temp.exists()) {
+
+            if (!TextUtils.isEmpty(it)) {
+                val temp = File(it)
                 Logger.i("$TAG Take image success,file path : ${temp.absolutePath}")
                 readPictureDegree(temp.absolutePath)
             } else {
@@ -72,20 +70,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         videoLauncher = registerForActivityResult(TakeVideoContract()) {
-            val temp = File(it)
-            if (temp.exists()) {
-                Logger.i("$TAG Take video success,file path : ${temp.absolutePath}")
+            if (!TextUtils.isEmpty(it)) {
+                Logger.i("$TAG Take video success,file path : $it")
             } else {
                 Logger.w("$TAG Video file not exist!")
             }
         }
 
         fileLauncher = registerForActivityResult(TakeFileContract()) {
-            val temp = File(it)
-            if (temp.exists()) {
-                Logger.i("$TAG Take file success,file path : ${temp.absolutePath}")
+
+            if (TextUtils.isEmpty(it)) {
+                Toast.makeText(this, "无效的文件", Toast.LENGTH_SHORT).show()
             } else {
-                Logger.w("$TAG file not exist!")
+                val temp = File(it)
+                if (temp.exists()) {
+                    Logger.i("$TAG Take file success,file path : ${temp.absolutePath}")
+                } else {
+                    Logger.w("$TAG file not exist!")
+                }
             }
         }
 
@@ -94,8 +96,8 @@ class MainActivity : AppCompatActivity() {
     fun startAlbum(view: View) {
         albumLauncher?.launch(MediaPickerRequestBean().apply {
             max_chose_num = 3
-            maxPhotoSize = 3*1024*1024
-            maxVideoSize = 10*1024*1024
+            maxPhotoSize = 3 * 1024 * 1024
+            maxVideoSize = 10 * 1024 * 1024
             pickerType = PickerType.PHOTO_VIDEO
             openBottomMoreOperate = true
             overSizeVisible = true
@@ -118,7 +120,7 @@ class MainActivity : AppCompatActivity() {
             showLight = true
             showRatio = true
             preOnClickListenerClass = RecordPreOnClickListener::class.java
-            saveDirPath=externalCacheDir?.absolutePath+File.separator+"Videos"
+            saveDirPath = externalCacheDir?.absolutePath + File.separator + "Videos"
         })
     }
 

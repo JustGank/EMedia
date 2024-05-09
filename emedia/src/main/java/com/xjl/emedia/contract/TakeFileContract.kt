@@ -50,40 +50,40 @@ class TakeFileContract : ActivityResultContract<String?, String?>() {
         return null
     }
 
-    fun getFileAbsolutePath(context: Context?, imageUri: Uri?): String? {
-        Logger.i("$TAG getFileAbsolutePath imageUri : $imageUri")
-        if (context == null || imageUri == null) {
+    fun getFileAbsolutePath(context: Context?, fileUri: Uri?): String? {
+        Logger.i("$TAG getFileAbsolutePath fileUri : $fileUri")
+        if (context == null || fileUri == null) {
             return null
         }
-        Logger.i("$TAG getFileAbsolutePath imageUri : $imageUri")
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            return getRealFilePath(context, imageUri)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && DocumentsContract.isDocumentUri(
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && DocumentsContract.isDocumentUri(
                 context,
-                imageUri
+                fileUri
             )
         ) {
-            if (isExternalStorageDocument(imageUri)) {
-                val docId = DocumentsContract.getDocumentId(imageUri)
+            if (isExternalStorageDocument(fileUri)) {
+                val docId = DocumentsContract.getDocumentId(fileUri)
                 val split = docId.split(":").toTypedArray()
                 val type = split[0]
                 if ("primary".equals(type, ignoreCase = true)) {
                     return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
                 }
-            } else if (isDownloadsDocument(imageUri)) {
-                val id = DocumentsContract.getDocumentId(imageUri)
+            } else if (isDownloadsDocument(fileUri)) {
+                var id = DocumentsContract.getDocumentId(fileUri)
+                Logger.i("$TAG getFileAbsolutePath getDocumentId : $id")
                 if (id.startsWith("raw:")) {
                     return id.replaceFirst("raw:".toRegex(), "")
+                } else {
+                   return ""
                 }
                 val contentUri = ContentUris.withAppendedId(
                     Uri.parse("content://downloads/public_downloads"),
                     java.lang.Long.valueOf(id)
                 )
                 return getDataColumn(context, contentUri, null, null)
-            } else if (isMediaDocument(imageUri) || isSuiDocument(imageUri)) {
-                Logger.e( "$TAG enter isMediaDocument")
-                val docId = DocumentsContract.getDocumentId(imageUri)
+            } else if (isMediaDocument(fileUri) || isSuiDocument(fileUri)) {
+                Logger.i("$TAG enter isMediaDocument")
+                val docId = DocumentsContract.getDocumentId(fileUri)
                 val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }
                     .toTypedArray()
                 val type = split[0]
@@ -96,29 +96,29 @@ class TakeFileContract : ActivityResultContract<String?, String?>() {
                     contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
                 }
                 if (contentUri == null) {
-                    Logger.e("$TAG  getFileAbsolutePath contentUri==null!")
-                    return null
+                    Logger.i("$TAG  getFileAbsolutePath contentUri==null!")
+                    return ""
                 }
                 val selection = MediaStore.Images.Media._ID + "=?"
                 val selectionArgs = arrayOf(split[1])
                 return getDataColumn(context, contentUri, selection, selectionArgs)
             }
         } // MediaStore (and general)
-        else if ("content".equals(imageUri.scheme, ignoreCase = true)) {
+        else if ("content".equals(fileUri.scheme, ignoreCase = true)) {
             // Return the remote address
-            if (isGooglePhotosUri(imageUri)) {
-                return imageUri.lastPathSegment
+            if (isGooglePhotosUri(fileUri)) {
+                return fileUri.lastPathSegment
             }
-            if (isHuaWeiUri(imageUri)) {
-                val uriPath = imageUri.path
+            if (isHuaWeiUri(fileUri)) {
+                val uriPath = fileUri.path
                 //content://com.huawei.hidisk.fileprovider/root/storage/emulated/0/Android/data/com.xxx.xxx/
                 if (uriPath != null && uriPath.startsWith("/root")) {
                     return uriPath.replace("/root".toRegex(), "")
                 }
             }
-            return getDataColumn(context, imageUri, null, null)
-        } else if ("file".equals(imageUri.scheme, ignoreCase = true)) {
-            return imageUri.path
+            return getDataColumn(context, fileUri, null, null)
+        } else if ("file".equals(fileUri.scheme, ignoreCase = true)) {
+            return fileUri.path
         }
         return null
     }

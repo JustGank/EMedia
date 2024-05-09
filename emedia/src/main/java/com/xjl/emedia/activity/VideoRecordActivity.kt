@@ -9,6 +9,8 @@ import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentActivity
 import com.xjl.emedia.R
 import com.xjl.emedia.bean.BroadcastCMD
@@ -17,6 +19,7 @@ import com.xjl.emedia.fragment.PreviewFragment
 import com.xjl.emedia.fragment.VideoRecordFragment
 import com.xjl.emedia.fragment.VideoRecordFragment.OnFinishRecordValueable
 import com.xjl.emedia.logger.Logger
+import com.xjl.emedia.utils.EMediaPermissionUtil
 
 /**
  * Created by x33664 on 2019/2/13.
@@ -36,6 +39,7 @@ class VideoRecordActivity : FragmentActivity() {
     var videoRecordBroadreceiver: VideoRecordBroadreceiver? = null
 
     lateinit var binding: ActivityVideoRecordBinding
+    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,21 +53,35 @@ class VideoRecordActivity : FragmentActivity() {
         binding = ActivityVideoRecordBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        supportFragmentManager.beginTransaction().let {
-            videoRecordFragment = VideoRecordFragment()
-            videoRecordFragment.setOnFinishRecordValueable(onFinishRecordValueable)
-            it.add(R.id.frame, videoRecordFragment)
-            it.commitAllowingStateLoss()
-        }
+        permissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                val deniedPermissions = permissions.filterNot { it.value }
+                Logger.i("$TAG getMediaFiles deniedPermissions:$deniedPermissions")
+                if (deniedPermissions.isNotEmpty()) {
+                    permissionLauncher.launch(EMediaPermissionUtil.getCameraNotGrantedPermissions(this@VideoRecordActivity))
+                } else {
+                    supportFragmentManager.beginTransaction().let {
+                        videoRecordFragment = VideoRecordFragment()
+                        videoRecordFragment.setOnFinishRecordValueable(onFinishRecordValueable)
+                        it.add(R.id.frame, videoRecordFragment)
+                        it.commitAllowingStateLoss()
+                    }
 
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(BroadcastCMD.INTERRUPT_RECORD)
-        videoRecordBroadreceiver = VideoRecordBroadreceiver()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            registerReceiver(videoRecordBroadreceiver, intentFilter,Context.RECEIVER_NOT_EXPORTED)
-        }else{
-            registerReceiver(videoRecordBroadreceiver, intentFilter)
-        }
+                    val intentFilter = IntentFilter()
+                    intentFilter.addAction(BroadcastCMD.INTERRUPT_RECORD)
+                    videoRecordBroadreceiver = VideoRecordBroadreceiver()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        registerReceiver(videoRecordBroadreceiver, intentFilter,Context.RECEIVER_NOT_EXPORTED)
+                    }else{
+                        registerReceiver(videoRecordBroadreceiver, intentFilter)
+                    }
+                }
+            }
+        permissionLauncher.launch(EMediaPermissionUtil.getCameraNotGrantedPermissions(this@VideoRecordActivity))
+
+
+
+
     }
 
     private val onFinishRecordValueable = object:OnFinishRecordValueable   {

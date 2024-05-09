@@ -177,18 +177,7 @@ class VideoRecordFragment : Fragment() {
 
         }
 
-        requireActivity().apply {
-            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
-                checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
-            ) {
-                Toast.makeText(
-                    activity,
-                    recordRequstBean.videoRecordEntry?.please_gave_permission,
-                    Toast.LENGTH_SHORT
-                ).show()
-                finish()
-            }
-        }
+
 
         binding.buttonCapture.let {
             ViewCompat.requestApplyInsets(it)
