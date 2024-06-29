@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.xjl.emedia.activity.VideoRecordActivity
-import com.xjl.emedia.databinding.FragmentPreviewBinding
+import com.xjl.emedia.databinding.FragmentPreviewVideoBinding
 import com.xjl.emedia.logger.Logger
 import com.xjl.emedia.utils.IntentUtil
 import java.io.File
@@ -33,7 +33,7 @@ class PreviewFragment : Fragment() {
         }
     }
 
-    lateinit var binding: FragmentPreviewBinding
+    lateinit var binding: FragmentPreviewVideoBinding
 
     private var filePath: String? = null
 
@@ -42,7 +42,7 @@ class PreviewFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentPreviewBinding.inflate(layoutInflater)
+        binding = FragmentPreviewVideoBinding.inflate(layoutInflater)
         filePath = arguments?.getString("filePath")
         Logger.i("$TAG onCreateView fileUri=$filePath")
         return binding.root

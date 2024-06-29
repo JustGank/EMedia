@@ -1,6 +1,5 @@
 package com.xjl.emedia.fragment
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
@@ -53,7 +52,7 @@ import com.xjl.emedia.R
 import com.xjl.emedia.activity.VideoRecordActivity
 import com.xjl.emedia.bean.MediaRecordRequestBean
 import com.xjl.emedia.bean.RecordQuality
-import com.xjl.emedia.databinding.FragmentVideoRecorderBinding
+import com.xjl.emedia.databinding.FragmentRecordVideoBinding
 import com.xjl.emedia.impl.PreOnClickListener
 import com.xjl.emedia.logger.Logger
 import java.io.File
@@ -133,7 +132,7 @@ class VideoRecordFragment : Fragment() {
     lateinit var recordRequstBean: MediaRecordRequestBean
     private var preOnClickListener: PreOnClickListener? = null
 
-    lateinit var binding: FragmentVideoRecorderBinding
+    lateinit var binding: FragmentRecordVideoBinding
     override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View? {
         if (!hasCamera(requireActivity())) {
             //这台设备没有发现摄像头
@@ -144,7 +143,7 @@ class VideoRecordFragment : Fragment() {
             requireActivity().setResult(VideoRecordActivity.RESULT_CODE_FOR_RECORD_VIDEO_FAILED)
             requireActivity().finish()
         }
-        binding = FragmentVideoRecorderBinding.inflate(i)
+        binding = FragmentRecordVideoBinding.inflate(i)
         return binding.root
     }
 
@@ -446,6 +445,12 @@ class VideoRecordFragment : Fragment() {
 
     @SuppressLint("MissingPermission")
     fun recordVideo() {
+
+        if(videoCapture==null||videoCapture?.output==null){
+            Logger.i("$TAG recordVideo videoCapture not init!")
+            return
+        }
+
         if (recording != null) {
             if (countUp < recordRequstBean.recordMinTime) {
                 Toast.makeText(
@@ -480,8 +485,7 @@ class VideoRecordFragment : Fragment() {
                 )
             }
 
-        recording = pendingRecording?.withAudioEnabled()
-            ?.start(ContextCompat.getMainExecutor(requireContext())) { event ->
+        recording = pendingRecording.withAudioEnabled().start(ContextCompat.getMainExecutor(requireContext())) { event ->
                 when (event) {
                     is VideoRecordEvent.Start -> {
                         //录制开启后隐藏 反转摄像头
