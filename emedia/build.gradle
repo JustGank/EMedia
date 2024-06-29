@@ -55,3 +55,18 @@ dependencies {
     implementation "androidx.camera:camera-view:${camerax_version}"
 
 }
+
+
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.JustGank'
+                artifactId = 'emedia'
+                version = '1.0.0'
+            }
+        }
+    }
+}
